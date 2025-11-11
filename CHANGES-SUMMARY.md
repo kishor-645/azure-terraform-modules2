@@ -2,26 +2,37 @@
 
 This document summarizes the cleanup and optimization changes made to the repository.
 
-## Scripts Cleanup
+## Simplification Changes (Latest)
 
-### Removed Scripts (Unnecessary)
-The following scripts were removed as they were either unnecessary or can be handled by Azure DevOps pipelines:
+### Removed Multi-Region Support
+- **Bootstrap (0-bootstrap/)**: Simplified from 4 regions to single region (Canada Central)
+  - Reduced from ~23 resources to ~6 resources
+  - Simplified outputs and documentation
+  - Cost reduced from $85/month to $25/month (without DDoS)
 
-- ❌ `configure-kubectl.sh` - kubectl installation handled by Azure DevOps tasks
+- **CIDR Validation**: Removed multi-region CIDR ranges, kept only Canada Central
+
+### Removed Deprecated Pipelines
+- ❌ `terraform-plan.yml` - Replaced by PR validation pipeline
+- ❌ `terraform-apply.yml` - Replaced by deployment pipeline
+- ❌ `validate-terraform.yml` - Replaced by PR validation pipeline
+
+### Removed Unnecessary Scripts
+- ❌ `configure-kubectl.sh` - Not needed
 - ❌ `install-istio.sh` - Istio is enabled as inbuilt AKS feature
-- ❌ `validate-deployment.sh` - Validation handled by pipelines
-- ❌ `backup-terraform-state.sh` - State backup handled by Azure Storage
-- ❌ `get-istio-lb-ip.sh` - Can be retrieved via kubectl in pipeline if needed
-- ❌ `get-aks-credentials.sh` - Can be handled by Azure DevOps tasks
-- ❌ `deploy-stage1.sh` - Deployment handled by Azure DevOps pipelines
-- ❌ `deploy-stage2.sh` - Deployment handled by Azure DevOps pipelines
+- ❌ `deploy-stage1.sh` - Use Makefile instead
+- ❌ `deploy-stage2.sh` - Use Makefile instead
 
 ### Kept Scripts (Essential)
 The following scripts are kept as they provide essential functionality:
 
 - ✅ `get-secrets-from-keyvault.sh` - Retrieves secrets from Key Vault for pipeline use
 - ✅ `setup-backend.sh` - Sets up Terraform backend (useful for initial setup)
-- ✅ `validate-cidr.py` - Validates CIDR ranges for network planning
+- ✅ `validate-cidr.py` - Validates CIDR ranges for Canada Central
+- ✅ `validate-deployment.sh` - Post-deployment validation
+- ✅ `backup-terraform-state.sh` - State backup utility
+- ✅ `get-aks-credentials.sh` - AKS credential retrieval
+- ✅ `get-istio-lb-ip.sh` - Istio load balancer IP retrieval
 
 ## New Pipelines
 

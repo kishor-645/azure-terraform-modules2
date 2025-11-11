@@ -5,11 +5,8 @@
 # Azure subscription ID (REQUIRED)
 subscription_id = "00000000-0000-0000-0000-000000000000"
 
-# Enable DDoS Protection Standard (recommended for production)
-enable_ddos_protection = true
-
-# Create global Log Analytics workspace for bootstrap monitoring
-create_global_log_analytics = false
+# Enable DDoS Protection Standard (optional, adds ~$3,000/month cost)
+enable_ddos_protection = false
 
 # Additional custom tags (optional)
 additional_tags = {

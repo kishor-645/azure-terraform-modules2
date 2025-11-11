@@ -8,13 +8,7 @@ variable "subscription_id" {
 }
 
 variable "enable_ddos_protection" {
-  description = "Enable DDoS Protection Standard plan (shared across all regions)"
-  type        = bool
-  default     = true
-}
-
-variable "create_global_log_analytics" {
-  description = "Create a global Log Analytics workspace for bootstrap monitoring"
+  description = "Enable DDoS Protection Standard plan"
   type        = bool
   default     = false
 }

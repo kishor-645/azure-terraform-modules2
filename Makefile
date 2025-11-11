@@ -178,11 +178,8 @@ ci-apply: apply-stage1 ## CI: Apply changes (requires approval)
 
 ##@ Examples
 
-example-canada-dev: ## Deploy Canada Central Dev
+example-dev: ## Deploy Dev environment
 	@$(MAKE) REGION=canada-central ENV=dev apply-stage1
 
-example-canada-prod: ## Deploy Canada Central Prod
+example-prod: ## Deploy Prod environment
 	@$(MAKE) REGION=canada-central ENV=prod apply-stage1
-
-example-eastus2-prod: ## Deploy East US 2 Prod
-	@$(MAKE) REGION=eastus2 ENV=prod apply-stage1

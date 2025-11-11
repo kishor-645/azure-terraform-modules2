@@ -17,13 +17,9 @@ Complete CI/CD automation for Terraform infrastructure deployment with security 
   - Retrieves secrets from Azure Key Vault
   - Deploys infrastructure
 
-### Legacy Pipelines (Deprecated)
+### Additional Pipelines
 
-The following pipeline files are deprecated and replaced by the main pipelines above:
-- `terraform-plan.yml` - Replaced by PR validation pipeline
-- `terraform-apply.yml` - Replaced by deployment pipeline
-- `validate-terraform.yml` - Replaced by PR validation pipeline
-- `terraform-destroy.yml` - Can be used for manual destruction if needed
+- **`terraform-destroy.yml`**: Manual destruction pipeline (use with caution)
 
 ## Prerequisites
 

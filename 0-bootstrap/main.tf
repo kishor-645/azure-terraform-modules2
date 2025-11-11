@@ -1,6 +1,6 @@
 # Bootstrap Infrastructure
-# Creates foundational resources for Terraform state management across all regions
-# Run this ONCE before deploying any regional infrastructure
+# Creates foundational resources for Terraform state management in Canada Central
+# Run this ONCE before deploying infrastructure
 
 terraform {
   required_version = ">= 1.10.3"
@@ -32,33 +32,14 @@ provider "azurerm" {
 
 # Local variables
 locals {
-  regions = {
-    canada_central = {
-      name          = "canadacentral"
-      display_name  = "Canada Central"
-      abbreviation  = "cc"
-    }
-    east_us2 = {
-      name          = "eastus2"
-      display_name  = "East US 2"
-      abbreviation  = "eus2"
-    }
-    central_india = {
-      name          = "centralindia"
-      display_name  = "Central India"
-      abbreviation  = "cin"
-    }
-    uae_north = {
-      name          = "uaenorth"
-      display_name  = "UAE North"
-      abbreviation  = "uan"
-    }
-  }
+  region           = "canadacentral"
+  region_display   = "Canada Central"
+  region_abbr      = "cc"
 
   common_tags = {
     Environment  = "Shared"
     ManagedBy    = "Terraform"
-    Project      = "ERP-Multi-Region"
+    Project      = "ERP-Infrastructure"
     Purpose      = "Bootstrap"
     CreatedDate  = timestamp()
   }
@@ -76,24 +57,20 @@ resource "random_string" "suffix" {
 # ========================================
 
 resource "azurerm_resource_group" "terraform_state" {
-  for_each = local.regions
-
-  name     = "rg-tfstate-${each.value.name}"
-  location = each.value.name
+  name     = "rg-tfstate-${local.region}"
+  location = local.region
 
   tags = merge(local.common_tags, {
-    Region = each.value.display_name
+    Region = local.region_display
   })
 }
 
 resource "azurerm_resource_group" "key_vault" {
-  for_each = local.regions
-
-  name     = "rg-keyvault-${each.value.name}"
-  location = each.value.name
+  name     = "rg-keyvault-${local.region}"
+  location = local.region
 
   tags = merge(local.common_tags, {
-    Region = each.value.display_name
+    Region = local.region_display
   })
 }
 
@@ -102,18 +79,16 @@ resource "azurerm_resource_group" "key_vault" {
 # ========================================
 
 resource "azurerm_storage_account" "tfstate" {
-  for_each = local.regions
-
-  name                     = "sttfstate${each.value.abbreviation}${random_string.suffix.result}"
-  resource_group_name      = azurerm_resource_group.terraform_state[each.key].name
-  location                 = azurerm_resource_group.terraform_state[each.key].location
+  name                     = "sttfstate${local.region_abbr}${random_string.suffix.result}"
+  resource_group_name      = azurerm_resource_group.terraform_state.name
+  location                 = azurerm_resource_group.terraform_state.location
   account_tier             = "Standard"
   account_replication_type = "GRS"  # Geo-redundant for disaster recovery
   account_kind             = "StorageV2"
 
   # Security settings
   min_tls_version                 = "TLS1_2"
-  enable_https_traffic_only       = true
+  https_traffic_only_enabled      = true
   allow_nested_items_to_be_public = false
   shared_access_key_enabled       = true
 
@@ -132,24 +107,15 @@ resource "azurerm_storage_account" "tfstate" {
     }
   }
 
-  # Network security (initially allow all, restrict after setup)
-  network_rules {
-    default_action = "Allow"  # Change to "Deny" after locking down network access (Private Endpoints/firewall rules)
-    bypass         = ["AzureServices"]
-  }
-
   tags = merge(local.common_tags, {
-    Region = each.value.display_name
+    Region = local.region_display
   })
 }
 
 # Storage container for Terraform state files
 resource "azurerm_storage_container" "tfstate" {
-  for_each = local.regions
-
-  name                  = "tfstate"
-  storage_account_name  = azurerm_storage_account.tfstate[each.key].name
-  container_access_type = "private"
+  name                 = "tfstate"
+  storage_account_id   = azurerm_storage_account.tfstate.id
 }
 
 # ========================================
@@ -159,12 +125,10 @@ resource "azurerm_storage_container" "tfstate" {
 # Get current Azure AD user/service principal for Key Vault access
 data "azurerm_client_config" "current" {}
 
-resource "azurerm_key_vault" "regional" {
-  for_each = local.regions
-
-  name                       = "kv-${each.value.abbreviation}-${random_string.suffix.result}"
-  location                   = azurerm_resource_group.key_vault[each.key].location
-  resource_group_name        = azurerm_resource_group.key_vault[each.key].name
+resource "azurerm_key_vault" "main" {
+  name                       = "kv-${local.region_abbr}-${random_string.suffix.result}"
+  location                   = azurerm_resource_group.key_vault.location
+  resource_group_name        = azurerm_resource_group.key_vault.name
   tenant_id                  = data.azurerm_client_config.current.tenant_id
   sku_name                   = "standard"
   soft_delete_retention_days = 90
@@ -173,56 +137,28 @@ resource "azurerm_key_vault" "regional" {
   # RBAC mode (recommended over access policies)
   enable_rbac_authorization = true
 
-  # Network security (initially allow all, restrict after setup)
-  network_acls {
-    default_action = "Allow"  # Change to "Deny" after configuring private endpoints
-    bypass         = "AzureServices"
-  }
-
   tags = merge(local.common_tags, {
-    Region = each.value.display_name
+    Region = local.region_display
   })
 }
 
 # Grant current user/service principal Key Vault Administrator role
 resource "azurerm_role_assignment" "kv_admin" {
-  for_each = local.regions
-
-  scope                = azurerm_key_vault.regional[each.key].id
+  scope                = azurerm_key_vault.main.id
   role_definition_name = "Key Vault Administrator"
   principal_id         = data.azurerm_client_config.current.object_id
 }
 
 # ========================================
-# DDoS Protection Plan (Shared Globally)
+# DDoS Protection Plan (Optional)
 # ========================================
 
-resource "azurerm_network_ddos_protection_plan" "global" {
+resource "azurerm_network_ddos_protection_plan" "main" {
   count = var.enable_ddos_protection ? 1 : 0
 
-  name                = "ddos-global-${random_string.suffix.result}"
-  location            = "canadacentral"  # Primary region
-  resource_group_name = azurerm_resource_group.terraform_state["canada_central"].name
+  name                = "ddos-${local.region_abbr}-${random_string.suffix.result}"
+  location            = local.region
+  resource_group_name = azurerm_resource_group.terraform_state.name
 
-  tags = merge(local.common_tags, {
-    Scope = "Global"
-  })
-}
-
-# ========================================
-# Log Analytics Workspace (Optional - Global)
-# ========================================
-
-resource "azurerm_log_analytics_workspace" "global" {
-  count = var.create_global_log_analytics ? 1 : 0
-
-  name                = "log-global-${random_string.suffix.result}"
-  location            = "canadacentral"
-  resource_group_name = azurerm_resource_group.terraform_state["canada_central"].name
-  sku                 = "PerGB2018"
-  retention_in_days   = 90
-
-  tags = merge(local.common_tags, {
-    Scope = "Global"
-  })
+  tags = local.common_tags
 }

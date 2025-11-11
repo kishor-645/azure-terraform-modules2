@@ -1,13 +1,13 @@
 # Bootstrap Infrastructure
 
-This directory contains Terraform configuration to create foundational infrastructure needed for state management across all regions.
+This directory contains Terraform configuration to create foundational infrastructure needed for state management in Canada Central.
 
 ## Purpose
 
 The bootstrap process creates:
-- **Terraform State Storage**: Azure Storage Accounts with blob containers in each region
-- **Key Vaults**: Secure storage for secrets and certificates per region
-- **DDoS Protection Plan**: Shared global DDoS protection (optional)
+- **Terraform State Storage**: Azure Storage Account with blob container
+- **Key Vault**: Secure storage for secrets and certificates
+- **DDoS Protection Plan**: Optional DDoS protection
 - **Resource Groups**: Organizational containers for bootstrap resources
 
 ## Prerequisites
@@ -38,8 +38,7 @@ vi bootstrap.tfvars
 - `subscription_id`: Your Azure subscription ID
 
 **Optional Variables:**
-- `enable_ddos_protection`: Enable DDoS Standard (default: true)
-- `create_global_log_analytics`: Create global workspace (default: false)
+- `enable_ddos_protection`: Enable DDoS Standard (default: false)
 
 ### Step 2: Initialize Terraform
 
@@ -54,15 +53,14 @@ terraform plan -var-file="bootstrap.tfvars"
 ```
 
 **Expected Resources:**
-- 4 Resource Groups (state storage)
-- 4 Resource Groups (Key Vaults)
-- 4 Storage Accounts (with GRS replication)
-- 4 Storage Containers (tfstate)
-- 4 Key Vaults (with RBAC)
-- 4 Role Assignments (Key Vault Administrator)
+- 2 Resource Groups (state storage and Key Vault)
+- 1 Storage Account (with GRS replication)
+- 1 Storage Container (tfstate)
+- 1 Key Vault (with RBAC)
+- 1 Role Assignment (Key Vault Administrator)
 - 1 DDoS Protection Plan (if enabled)
 
-**Total:** ~23 resources
+**Total:** ~6 resources (7 with DDoS)
 
 ### Step 4: Apply Configuration
 
@@ -79,18 +77,18 @@ terraform apply -var-file="bootstrap.tfvars"
 terraform output -json > bootstrap-outputs.json
 
 # View backend configuration examples
-terraform output backend_config_example_canada_central_dev
-terraform output backend_config_example_canada_central_prod
+terraform output backend_config_dev
+terraform output backend_config_prod
 ```
 
 ## Outputs
 
-Key outputs needed for regional deployments:
+Key outputs needed for deployments:
 
-- `tfstate_storage_accounts`: Storage account names for backend configuration
-- `key_vaults`: Key Vault details for secrets management
-- `ddos_protection_plan_id`: DDoS plan ID for VNet association
-- `backend_config_example_*`: Copy-paste ready backend configurations
+- `tfstate_storage_account_name`: Storage account name for backend configuration
+- `key_vault_name`: Key Vault name for secrets management
+- `ddos_protection_plan_id`: DDoS plan ID for VNet association (if enabled)
+- `backend_config_*`: Copy-paste ready backend configurations
 
 ## Post-Bootstrap Steps
 
@@ -182,14 +180,14 @@ terraform destroy -var-file="bootstrap.tfvars"
 ## Cost Estimation
 
 Monthly costs (approximate):
-- Storage Accounts (GRS): ~$20/month per region = **$80/month**
-- Key Vaults (Standard): ~$0.03/10k operations = **~$5/month**
+- Storage Account (GRS): **~$20/month**
+- Key Vault (Standard): **~$5/month**
 - DDoS Protection Plan: **$2,944/month** (if enabled)
 
-**Total without DDoS:** ~$85/month  
-**Total with DDoS:** ~$3,029/month
+**Total without DDoS:** ~$25/month
+**Total with DDoS:** ~$2,969/month
 
-> **Note:** DDoS Protection Standard is expensive but recommended for production workloads exposed to internet.
+> **Note:** DDoS Protection Standard is expensive. Only enable if required for production workloads exposed to internet.
 
 ## Files
 
