@@ -1,0 +1,19 @@
+# Bootstrap Configuration Example
+# Copy this file to bootstrap.tfvars and configure with your values
+# DO NOT commit bootstrap.tfvars to version control!
+
+# Azure subscription ID (REQUIRED)
+subscription_id = "00000000-0000-0000-0000-000000000000"
+
+# Enable DDoS Protection Standard (recommended for production)
+enable_ddos_protection = true
+
+# Create global Log Analytics workspace for bootstrap monitoring
+create_global_log_analytics = false
+
+# Additional custom tags (optional)
+additional_tags = {
+  CostCenter = "CC-12345"
+  Owner      = "Platform Team"
+  Compliance = "SOC2"
+}

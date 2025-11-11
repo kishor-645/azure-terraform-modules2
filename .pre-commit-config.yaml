@@ -1,0 +1,92 @@
+# Pre-commit hooks for Terraform code quality
+# Install: pre-commit install
+# Run manually: pre-commit run --all-files
+
+repos:
+  # Terraform hooks
+  - repo: https://github.com/antonbabenko/pre-commit-terraform
+    rev: v1.88.4
+    hooks:
+      - id: terraform_fmt
+        name: Terraform Format
+        description: Rewrites Terraform files to canonical format
+        
+      - id: terraform_validate
+        name: Terraform Validate
+        description: Validates Terraform configuration files
+        args:
+          - --hook-config=--retry-once-with-cleanup=true
+        
+      - id: terraform_docs
+        name: Terraform Docs
+        description: Generate Terraform module documentation
+        args:
+          - --hook-config=--path-to-file=README.md
+          - --hook-config=--add-to-existing-file=true
+          - --hook-config=--create-file-if-not-exist=true
+        
+      - id: terraform_tflint
+        name: TFLint
+        description: Linter for Terraform files
+        args:
+          - --args=--config=__GIT_WORKING_DIR__/.tflint.hcl
+        
+      - id: terraform_checkov
+        name: Checkov Security Scan
+        description: Static code analysis for Terraform
+        args:
+          - --args=--config-file=__GIT_WORKING_DIR__/.checkov.yaml
+
+  # Git hooks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+        name: Trim Trailing Whitespace
+        
+      - id: end-of-file-fixer
+        name: Fix End of Files
+        
+      - id: check-yaml
+        name: Check YAML Syntax
+        exclude: ^(pipelines/|\.github/)
+        
+      - id: check-added-large-files
+        name: Check for Large Files
+        args: ['--maxkb=1024']
+        
+      - id: check-merge-conflict
+        name: Check for Merge Conflicts
+        
+      - id: detect-private-key
+        name: Detect Private Keys
+        
+      - id: no-commit-to-branch
+        name: Prevent Direct Commits to Main
+        args: ['--branch', 'main', '--branch', 'master']
+
+  # Secrets detection
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.4.0
+    hooks:
+      - id: detect-secrets
+        name: Detect Secrets
+        args: ['--baseline', '.secrets.baseline']
+        exclude: ^(\.terraform/|terraform\.tfstate)
+
+  # Markdown linting
+  - repo: https://github.com/igorshubovych/markdownlint-cli
+    rev: v0.39.0
+    hooks:
+      - id: markdownlint
+        name: Markdown Lint
+        args: ['--fix']
+        exclude: ^(\.terraform/|terraform\.tfstate|CHANGELOG\.md)
+
+  # Shell script linting
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: v0.9.0.6
+    hooks:
+      - id: shellcheck
+        name: ShellCheck
+        args: ['--severity=warning']

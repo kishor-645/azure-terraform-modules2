@@ -1,0 +1,19 @@
+# Terraform Apply Pipeline
+trigger: none
+
+variables:
+  - group: terraform-prod-variables
+  - name: TF_VERSION
+    value: '1.10.3'
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+stages:
+  - stage: Apply
+    jobs:
+      - job: TerraformApply
+        steps:
+          - task: TerraformInstaller@0
+            inputs:
+              terraformVersion: $(TF_VERSION)

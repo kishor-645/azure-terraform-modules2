@@ -1,0 +1,14 @@
+# Approval Stage Template
+parameters:
+  - name: stageName
+    type: string
+
+stages:
+  - stage: Approval
+    jobs:
+      - job: ManualApproval
+        pool: server
+        steps:
+          - task: ManualValidation@0
+            inputs:
+              instructions: 'Please approve'

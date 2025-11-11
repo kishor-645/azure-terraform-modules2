@@ -1,0 +1,240 @@
+# Azure DevOps Deployment Pipeline
+# Deploys infrastructure with Checkov and TFLint scans, Key Vault secret retrieval
+
+name: $(Date:yyyyMMdd)$(Rev:.r)
+
+trigger:
+  branches:
+    include:
+      - main
+      - develop
+
+pr: none
+
+variables:
+  - name: TF_VERSION
+    value: '1.10.3'
+  - name: CHECKOV_VERSION
+    value: '3.1.0'
+  - name: TFLINT_VERSION
+    value: '0.50.3'
+  - name: ENVIRONMENT
+    ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
+      value: 'prod'
+    ${{ else }}:
+      value: 'dev'
+  - name: WORKING_DIRECTORY
+    ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
+      value: 'environments/canada-central/prod'
+    ${{ else }}:
+      value: 'environments/canada-central/dev'
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+stages:
+  # ========================================
+  # Validation Stage
+  # ========================================
+  - stage: Validate
+    displayName: 'Code Validation & Security Scan'
+    jobs:
+      - job: Validation
+        displayName: 'Terraform Validation & Security'
+        steps:
+          - checkout: self
+
+          # Install Terraform
+          - task: TerraformInstaller@0
+            displayName: 'Install Terraform'
+            inputs:
+              terraformVersion: $(TF_VERSION)
+
+          # Install TFLint
+          - task: Bash@3
+            displayName: 'Install TFLint'
+            inputs:
+              targetType: 'inline'
+              script: |
+                curl -s https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash
+                tflint --version
+
+          # Install Checkov
+          - task: Bash@3
+            displayName: 'Install Checkov'
+            inputs:
+              targetType: 'inline'
+              script: |
+                pip3 install checkov==$(CHECKOV_VERSION)
+                checkov --version
+
+          # Terraform Format Check
+          - task: Bash@3
+            displayName: 'Terraform Format Check'
+            inputs:
+              targetType: 'inline'
+              script: |
+                echo "Checking Terraform formatting..."
+                terraform fmt -check -recursive
+                if [ $? -ne 0 ]; then
+                  echo "##vso[task.logissue type=error]Terraform files are not properly formatted."
+                  exit 1
+                fi
+                echo "✓ All Terraform files are properly formatted"
+
+          # Terraform Init
+          - task: TerraformTaskV4@4
+            displayName: 'Terraform Init'
+            inputs:
+              provider: 'azurerm'
+              command: 'init'
+              workingDirectory: $(WORKING_DIRECTORY)
+              backendServiceArm: '$(AZURE_SERVICE_CONNECTION)'
+              backendAzureRmResourceGroupName: '$(BACKEND_RESOURCE_GROUP)'
+              backendAzureRmStorageAccountName: '$(BACKEND_STORAGE_ACCOUNT)'
+              backendAzureRmContainerName: '$(BACKEND_CONTAINER)'
+              backendAzureRmKey: 'terraform.tfstate'
+
+          # Terraform Validate
+          - task: TerraformTaskV4@4
+            displayName: 'Terraform Validate'
+            inputs:
+              provider: 'azurerm'
+              command: 'validate'
+              workingDirectory: $(WORKING_DIRECTORY)
+
+          # TFLint Scan
+          - task: Bash@3
+            displayName: 'TFLint Scan'
+            inputs:
+              targetType: 'inline'
+              script: |
+                echo "Running TFLint scan..."
+                cd $(WORKING_DIRECTORY)
+                tflint --init
+                tflint --config ../../../.tflint.hcl --format compact
+                TFLINT_EXIT_CODE=$?
+                if [ $TFLINT_EXIT_CODE -ne 0 ]; then
+                  echo "##vso[task.logissue type=error]TFLint found issues."
+                  exit $TFLINT_EXIT_CODE
+                fi
+                echo "✓ TFLint scan passed"
+
+          # Checkov Scan
+          - task: Bash@3
+            displayName: 'Checkov Security Scan'
+            inputs:
+              targetType: 'inline'
+              script: |
+                echo "Running Checkov security scan..."
+                checkov -d . \
+                  --framework terraform \
+                  --config-file .checkov.yaml \
+                  --compact \
+                  --output cli \
+                  --output-file-path checkov-results.txt \
+                  --soft-fail
+                CHECKOV_EXIT_CODE=$?
+                
+                if [ -f checkov-results.txt ]; then
+                  cat checkov-results.txt
+                fi
+                
+                if [ $CHECKOV_EXIT_CODE -ne 0 ]; then
+                  echo "##vso[task.logissue type=error]Checkov found CRITICAL or HIGH severity issues."
+                  exit $CHECKOV_EXIT_CODE
+                fi
+                echo "✓ Checkov scan passed"
+
+  # ========================================
+  # Deployment Stage
+  # ========================================
+  - stage: Deploy
+    displayName: 'Deploy Infrastructure'
+    dependsOn: Validate
+    condition: succeeded()
+    jobs:
+      - deployment: TerraformDeploy
+        displayName: 'Terraform Apply'
+        environment: $(ENVIRONMENT)
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - checkout: self
+
+                # Install Terraform
+                - task: TerraformInstaller@0
+                  displayName: 'Install Terraform'
+                  inputs:
+                    terraformVersion: $(TF_VERSION)
+
+                # Azure Login
+                - task: AzureCLI@2
+                  displayName: 'Azure Login'
+                  inputs:
+                    azureSubscription: '$(AZURE_SERVICE_CONNECTION)'
+                    scriptType: 'bash'
+                    scriptLocation: 'inlineScript'
+                    inlineScript: |
+                      az account show
+
+                # Retrieve Secrets from Key Vault
+                - task: Bash@3
+                  displayName: 'Retrieve Secrets from Key Vault'
+                  inputs:
+                    targetType: 'filePath'
+                    filePath: 'scripts/get-secrets-from-keyvault.sh'
+                    arguments: '$(KEYVAULT_NAME) $(WORKING_DIRECTORY)/terraform.tfvars'
+                  env:
+                    AZURE_CLIENT_ID: $(AZURE_CLIENT_ID)
+                    AZURE_CLIENT_SECRET: $(AZURE_CLIENT_SECRET)
+                    AZURE_TENANT_ID: $(AZURE_TENANT_ID)
+
+                # Terraform Init
+                - task: TerraformTaskV4@4
+                  displayName: 'Terraform Init'
+                  inputs:
+                    provider: 'azurerm'
+                    command: 'init'
+                    workingDirectory: $(WORKING_DIRECTORY)
+                    backendServiceArm: '$(AZURE_SERVICE_CONNECTION)'
+                    backendAzureRmResourceGroupName: '$(BACKEND_RESOURCE_GROUP)'
+                    backendAzureRmStorageAccountName: '$(BACKEND_STORAGE_ACCOUNT)'
+                    backendAzureRmContainerName: '$(BACKEND_CONTAINER)'
+                    backendAzureRmKey: 'terraform.tfstate'
+
+                # Terraform Plan
+                - task: TerraformTaskV4@4
+                  displayName: 'Terraform Plan'
+                  inputs:
+                    provider: 'azurerm'
+                    command: 'plan'
+                    workingDirectory: $(WORKING_DIRECTORY)
+                    environmentServiceNameAzureRM: '$(AZURE_SERVICE_CONNECTION)'
+                    commandOptions: '-out=tfplan'
+
+                # Terraform Apply
+                - task: TerraformTaskV4@4
+                  displayName: 'Terraform Apply'
+                  inputs:
+                    provider: 'azurerm'
+                    command: 'apply'
+                    workingDirectory: $(WORKING_DIRECTORY)
+                    environmentServiceNameAzureRM: '$(AZURE_SERVICE_CONNECTION)'
+                    commandOptions: '-auto-approve tfplan'
+
+                # Cleanup sensitive data
+                - task: Bash@3
+                  displayName: 'Cleanup Sensitive Data'
+                  condition: always()
+                  inputs:
+                    targetType: 'inline'
+                    script: |
+                      echo "Cleaning up sensitive data from tfvars..."
+                      # Remove secrets from tfvars file
+                      sed -i '/postgresql_admin_password/d' $(WORKING_DIRECTORY)/terraform.tfvars
+                      sed -i '/jumpbox_admin_password/d' $(WORKING_DIRECTORY)/terraform.tfvars
+                      sed -i '/agent_vm_admin_password/d' $(WORKING_DIRECTORY)/terraform.tfvars
+                      echo "✓ Cleanup complete"
+

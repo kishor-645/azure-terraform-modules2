@@ -1,0 +1,17 @@
+# Terraform Validation Pipeline
+trigger:
+  branches:
+    include:
+      - '*'
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+stages:
+  - stage: Validate
+    jobs:
+      - job: FormatCheck
+        steps:
+          - task: Bash@3
+            inputs:
+              script: 'terraform fmt -check'

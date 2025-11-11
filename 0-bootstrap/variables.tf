@@ -1,0 +1,27 @@
+# Bootstrap Variables
+# Configure these values in bootstrap.tfvars
+
+variable "subscription_id" {
+  description = "Azure subscription ID for bootstrap resources"
+  type        = string
+  sensitive   = true
+}
+
+variable "enable_ddos_protection" {
+  description = "Enable DDoS Protection Standard plan (shared across all regions)"
+  type        = bool
+  default     = true
+}
+
+variable "create_global_log_analytics" {
+  description = "Create a global Log Analytics workspace for bootstrap monitoring"
+  type        = bool
+  default     = false
+}
+
+# Optional: Custom tags
+variable "additional_tags" {
+  description = "Additional tags to apply to all bootstrap resources"
+  type        = map(string)
+  default     = {}
+}

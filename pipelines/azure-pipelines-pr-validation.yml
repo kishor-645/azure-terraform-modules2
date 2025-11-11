@@ -1,0 +1,167 @@
+# Azure DevOps PR Validation Pipeline
+# Validates Terraform code on Pull Requests with Checkov and TFLint scans
+
+name: $(Date:yyyyMMdd)$(Rev:.r)
+
+pr:
+  branches:
+    include:
+      - main
+      - develop
+
+trigger: none
+
+variables:
+  - name: TF_VERSION
+    value: '1.10.3'
+  - name: CHECKOV_VERSION
+    value: '3.1.0'
+  - name: TFLINT_VERSION
+    value: '0.50.3'
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+stages:
+  - stage: Validate
+    displayName: 'PR Validation'
+    condition: eq(variables['Build.Reason'], 'PullRequest')
+    
+    jobs:
+      - job: TerraformValidation
+        displayName: 'Terraform Code Validation'
+        steps:
+          - checkout: self
+
+          # Install Terraform
+          - task: TerraformInstaller@0
+            displayName: 'Install Terraform'
+            inputs:
+              terraformVersion: $(TF_VERSION)
+
+          # Install TFLint
+          - task: Bash@3
+            displayName: 'Install TFLint'
+            inputs:
+              targetType: 'inline'
+              script: |
+                curl -s https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash
+                tflint --version
+
+          # Install Checkov
+          - task: Bash@3
+            displayName: 'Install Checkov'
+            inputs:
+              targetType: 'inline'
+              script: |
+                pip3 install checkov==$(CHECKOV_VERSION)
+                checkov --version
+
+          # Terraform Format Check
+          - task: Bash@3
+            displayName: 'Terraform Format Check'
+            inputs:
+              targetType: 'inline'
+              script: |
+                echo "Checking Terraform formatting..."
+                terraform fmt -check -recursive
+                if [ $? -ne 0 ]; then
+                  echo "##vso[task.logissue type=error]Terraform files are not properly formatted. Run 'terraform fmt -recursive' to fix."
+                  exit 1
+                fi
+                echo "✓ All Terraform files are properly formatted"
+
+          # Terraform Init
+          - task: TerraformTaskV4@4
+            displayName: 'Terraform Init'
+            inputs:
+              provider: 'azurerm'
+              command: 'init'
+              workingDirectory: 'environments/canada-central/prod'
+              backendServiceArm: '$(AZURE_SERVICE_CONNECTION)'
+              backendAzureRmResourceGroupName: '$(BACKEND_RESOURCE_GROUP)'
+              backendAzureRmStorageAccountName: '$(BACKEND_STORAGE_ACCOUNT)'
+              backendAzureRmContainerName: '$(BACKEND_CONTAINER)'
+              backendAzureRmKey: 'pr-validation.tfstate'
+
+          # Terraform Validate
+          - task: TerraformTaskV4@4
+            displayName: 'Terraform Validate'
+            inputs:
+              provider: 'azurerm'
+              command: 'validate'
+              workingDirectory: 'environments/canada-central/prod'
+
+          # TFLint Scan
+          - task: Bash@3
+            displayName: 'TFLint Scan'
+            inputs:
+              targetType: 'inline'
+              script: |
+                echo "Running TFLint scan..."
+                cd environments/canada-central/prod
+                tflint --init
+                tflint --config ../../../.tflint.hcl --format compact
+                TFLINT_EXIT_CODE=$?
+                if [ $TFLINT_EXIT_CODE -ne 0 ]; then
+                  echo "##vso[task.logissue type=error]TFLint found issues. Please review and fix."
+                  exit $TFLINT_EXIT_CODE
+                fi
+                echo "✓ TFLint scan passed"
+
+          # Checkov Scan
+          - task: Bash@3
+            displayName: 'Checkov Security Scan'
+            inputs:
+              targetType: 'inline'
+              script: |
+                echo "Running Checkov security scan..."
+                checkov -d . \
+                  --framework terraform \
+                  --config-file .checkov.yaml \
+                  --compact \
+                  --output cli \
+                  --output-file-path checkov-results.txt \
+                  --soft-fail
+                CHECKOV_EXIT_CODE=$?
+                
+                # Display results
+                if [ -f checkov-results.txt ]; then
+                  cat checkov-results.txt
+                fi
+                
+                # Fail on CRITICAL and HIGH severity issues
+                if [ $CHECKOV_EXIT_CODE -ne 0 ]; then
+                  echo "##vso[task.logissue type=error]Checkov found CRITICAL or HIGH severity security issues."
+                  exit $CHECKOV_EXIT_CODE
+                fi
+                echo "✓ Checkov scan passed"
+
+          # Terraform Plan (dry-run)
+          - task: TerraformTaskV4@4
+            displayName: 'Terraform Plan'
+            inputs:
+              provider: 'azurerm'
+              command: 'plan'
+              workingDirectory: 'environments/canada-central/prod'
+              environmentServiceNameAzureRM: '$(AZURE_SERVICE_CONNECTION)'
+              commandOptions: '-out=tfplan'
+
+          # Publish Checkov Results
+          - task: PublishTestResults@2
+            displayName: 'Publish Checkov Results'
+            condition: always()
+            inputs:
+              testResultsFormat: 'JUnit'
+              testResultsFiles: 'checkov-results.xml'
+              failTaskOnFailedTests: false
+
+          # Publish TFLint Results
+          - task: PublishTestResults@2
+            displayName: 'Publish TFLint Results'
+            condition: always()
+            inputs:
+              testResultsFormat: 'JUnit'
+              testResultsFiles: 'tflint-results.xml'
+              failTaskOnFailedTests: false
+

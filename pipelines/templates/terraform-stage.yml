@@ -1,0 +1,13 @@
+# Terraform Stage Template
+parameters:
+  - name: environment
+    type: string
+
+stages:
+  - stage: Terraform
+    jobs:
+      - job: TerraformJob
+        steps:
+          - task: TerraformInstaller@0
+            inputs:
+              terraformVersion: '1.10.3'

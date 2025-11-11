@@ -1,0 +1,17 @@
+# Terraform Destroy Pipeline
+trigger: none
+
+variables:
+  - group: terraform-prod-variables
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+stages:
+  - stage: Destroy
+    jobs:
+      - job: TerraformDestroy
+        steps:
+          - task: ManualValidation@0
+            inputs:
+              instructions: 'Confirm destroy operation'

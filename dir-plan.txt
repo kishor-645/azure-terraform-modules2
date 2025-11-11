@@ -1,0 +1,248 @@
+terraform-azure-erp/
+│
+├── .pre-commit-config.yaml              # Pre-commit hooks (fmt, validate)
+├── .gitignore                            # Ignore tfstate, .terraform, secrets
+├── .tflint.hcl                          # TFLint configuration
+├── .checkov.yaml                        # Checkov security scanning config
+│
+├── 0-bootstrap/                         # Pre-deployment setup
+│   ├── README.md
+│   ├── backend.tf
+│   ├── main.tf                          # Creates TF state storage + KV per region
+│   ├── variables.tf
+│   ├── outputs.tf
+│   └── bootstrap.tfvars                 # Bootstrap config
+│
+├── modules/                             # Reusable modules (versioned)
+│   │
+│   ├── networking/
+│   │   ├── hub-vnet/                   # v1.0.0
+│   │   │   ├── main.tf
+│   │   │   ├── variables.tf
+│   │   │   ├── outputs.tf
+│   │   │   └── README.md
+│   │   │
+│   │   ├── spoke-vnet/                 # v1.0.0
+│   │   │   ├── main.tf
+│   │   │   ├── variables.tf
+│   │   │   ├── outputs.tf
+│   │   │   └── README.md
+│   │   │
+│   │   ├── vnet-peering/               # v1.0.0
+│   │   │   ├── main.tf
+│   │   │   ├── variables.tf
+│   │   │   ├── outputs.tf
+│   │   │   └── README.md
+│   │   │
+│   │   └── private-dns-zone/           # v1.0.0
+│   │       ├── main.tf
+│   │       ├── variables.tf
+│   │       ├── outputs.tf
+│   │       └── README.md
+│   │
+│   ├── security/
+│   │   ├── azure-firewall/             # v1.0.0
+│   │   │   ├── main.tf
+│   │   │   ├── variables.tf
+│   │   │   ├── outputs.tf
+│   │   │   ├── firewall-policy.tf      # Separate file for policy
+│   │   │   ├── dnat-rules.tf           # Separate file (uses data source)
+│   │   │   ├── network-rules.tf        # Separate file
+│   │   │   ├── application-rules.tf    # Separate file
+│   │   │   └── README.md
+│   │   │
+│   │   ├── nsg/                        # v1.0.0
+│   │   │   ├── main.tf
+│   │   │   ├── variables.tf
+│   │   │   ├── outputs.tf
+│   │   │   └── README.md
+│   │   │
+│   │   ├── route-table/                # v1.0.0
+│   │   │   ├── main.tf
+│   │   │   ├── variables.tf
+│   │   │   ├── outputs.tf
+│   │   │   └── README.md
+│   │   │
+│   │   └── bastion/                    # v1.0.0
+│   │       ├── main.tf
+│   │       ├── variables.tf
+│   │       ├── outputs.tf
+│   │       └── README.md
+│   │
+│   ├── compute/
+│   │   ├── aks-cluster/                # v1.0.0
+│   │   │   ├── main.tf
+│   │   │   ├── variables.tf
+│   │   │   ├── outputs.tf
+│   │   │   ├── system-nodepool.tf      # Separate file
+│   │   │   ├── user-nodepool.tf        # Separate file
+│   │   │   ├── identity.tf             # Managed identities
+│   │   │   └── README.md
+│   │   │
+│   │   └── linux-vm/                   # v1.0.0 (Jumpbox)
+│   │       ├── main.tf
+│   │       ├── variables.tf
+│   │       ├── outputs.tf
+│   │       └── README.md
+│   │
+│   ├── storage/
+│   │   ├── storage-account/            # v1.0.0
+│   │   │   ├── main.tf
+│   │   │   ├── variables.tf
+│   │   │   ├── outputs.tf
+│   │   │   ├── cmk-encryption.tf       # Separate file for KV CMK
+│   │   │   └── README.md
+│   │   │
+│   │   ├── private-endpoint/           # v1.0.0 (Generic reusable)
+│   │   │   ├── main.tf
+│   │   │   ├── variables.tf
+│   │   │   ├── outputs.tf
+│   │   │   └── README.md
+│   │   │
+│   │   ├── acr/                        # v1.0.0
+│   │   │   ├── main.tf
+│   │   │   ├── variables.tf
+│   │   │   ├── outputs.tf
+│   │   │   ├── geo-replication.tf      # Separate file
+│   │   │   └── README.md
+│   │   │
+│   │   └── postgresql-flexible/       # v1.0.0
+│   │       ├── main.tf
+│   │       ├── variables.tf
+│   │       ├── outputs.tf
+│   │       ├── ha-config.tf            # Zone-redundant HA
+│   │       ├── backup-config.tf        # Backup retention + geo-restore
+│   │       └── README.md
+│   │
+│   ├── key-vault/                      # v1.0.0
+│   │   ├── main.tf
+│   │   ├── variables.tf
+│   │   ├── outputs.tf
+│   │   ├── rbac-assignments.tf         # Separate file
+│   │   └── README.md
+│   │
+│   ├── monitoring/
+│   │   ├── log-analytics/              # v1.0.0
+│   │   │   ├── main.tf
+│   │   │   ├── variables.tf
+│   │   │   ├── outputs.tf
+│   │   │   └── README.md
+│   │   │
+│   │   ├── diagnostic-settings/        # v1.0.0 (Generic reusable)
+│   │   │   ├── main.tf
+│   │   │   ├── variables.tf
+│   │   │   ├── outputs.tf
+│   │   │   └── README.md
+│   │   │
+│   │   └── nsg-flow-logs/              # v1.0.0
+│   │       ├── main.tf
+│   │       ├── variables.tf
+│   │       ├── outputs.tf
+│   │       └── README.md
+│   │
+│   ├── backup/
+│   │   └── backup-vault/               # v1.0.0
+│   │       ├── main.tf
+│   │       ├── variables.tf
+│   │       ├── outputs.tf
+│   │       ├── backup-policies.tf      # Separate file
+│   │       └── README.md
+│   │
+│   └── governance/
+│       ├── resource-group/             # v1.0.0
+│       │   ├── main.tf
+│       │   ├── variables.tf
+│       │   ├── outputs.tf
+│       │   └── README.md
+│       │
+│       ├── tagging/                    # v1.0.0
+│       │   ├── main.tf
+│       │   ├── variables.tf
+│       │   ├── outputs.tf
+│       │   └── README.md
+│       │
+│       ├── ddos-protection/            # v1.0.0
+│       │   ├── main.tf
+│       │   ├── variables.tf
+│       │   ├── outputs.tf
+│       │   └── README.md
+│       │
+│       └── naming-conventions/         # v1.0.0
+│           ├── main.tf
+│           ├── variables.tf
+│           ├── outputs.tf
+│           └── README.md
+│
+├── environments/                        # Live infrastructure
+│   │
+│   ├── canada-central/
+│   │   ├── dev/
+│   │   │   ├── backend.tf              # State: canadacentral-dev.tfstate
+│   │   │   ├── main.tf                 # Root module calls
+│   │   │   ├── variables.tf
+│   │   │   ├── terraform.tfvars        # Dev-specific values
+│   │   │   ├── outputs.tf
+│   │   │   ├── providers.tf            # Azure provider config
+│   │   │   ├── data-sources.tf         # Cloudflare IPs, etc.
+│   │   │   └── README.md
+│   │   │
+│   │   └── prod/
+│   │       ├── backend.tf              # State: canadacentral-prod.tfstate
+│   │       ├── main.tf
+│   │       ├── variables.tf
+│   │       ├── terraform.tfvars
+│   │       ├── outputs.tf
+│   │       ├── providers.tf
+│   │       ├── data-sources.tf
+│   │       └── README.md
+│   │
+│   ├── eastus2/
+│   │   ├── dev/
+│   │   │   └── [same structure as canada-central/dev]
+│   │   └── prod/
+│   │       └── [same structure]
+│   │
+│   ├── centralindia/
+│   │   ├── dev/
+│   │   │   └── [same structure]
+│   │   └── prod/
+│   │       └── [same structure]
+│   │
+│   └── uaenorth/
+│       ├── dev/
+│       │   └── [same structure]
+│       └── prod/
+│           └── [same structure]
+│
+├── scripts/
+│   ├── fetch-cloudflare-ips.sh         # Script to get Cloudflare IP ranges
+│   ├── validate-cidr.py                # CIDR overlap validation
+│   ├── smoke-tests.sh                  # Post-deployment testing
+│   └── pre-commit-setup.sh             # Setup pre-commit hooks
+│
+├── pipelines/
+│   ├── azure-pipelines.yml             # Main pipeline orchestrator
+│   ├── templates/
+│   │   ├── terraform-plan.yml          # Reusable plan template
+│   │   ├── terraform-apply.yml         # Reusable apply template
+│   │   ├── security-scan.yml           # Checkov + tfsec template
+│   │   └── smoke-tests.yml             # Post-deployment tests
+│   └── README.md
+│
+├── docs/
+│   ├── architecture/
+│   │   ├── network-topology.md
+│   │   ├── security-design.md
+│   │   └── disaster-recovery.md
+│   │
+│   ├── runbooks/
+│   │   ├── deployment-guide.md
+│   │   ├── troubleshooting.md
+│   │   └── rollback-procedures.md
+│   │
+│   └── adr/                            # Architectural Decision Records
+│       ├── 001-cidr-allocation.md
+│       ├── 002-state-management.md
+│       └── 003-module-versioning.md
+│
+└── README.md                            # Project overview

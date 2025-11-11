@@ -1,0 +1,81 @@
+# Checkov Security Scanning Configuration
+# https://www.checkov.io/
+
+# Frameworks to scan
+framework:
+  - terraform
+  - terraform_plan
+
+# Directories to scan
+directory:
+  - modules/
+  - environments/
+
+# Skip specific checks (with justification)
+skip-check:
+  # CKV_AZURE_33: Storage Account uses private endpoints instead
+  - CKV_AZURE_33
+  
+  # CKV_AZURE_35: Key Vault firewall configured via private endpoint
+  - CKV_AZURE_35
+  
+  # CKV_AZURE_109: AKS uses managed identity, local accounts disabled
+  - CKV_AZURE_109
+  
+  # CKV_AZURE_115: Azure Firewall Premium already has TLS inspection capability
+  - CKV_AZURE_115
+  
+  # CKV_AZURE_168: PostgreSQL configured with private endpoint
+  - CKV_AZURE_168
+
+# Severity threshold (CRITICAL, HIGH, MEDIUM, LOW)
+hard-fail-on:
+  - CRITICAL
+  - HIGH
+
+# Soft fail on these severities (warn but don't fail)
+soft-fail-on:
+  - MEDIUM
+  - LOW
+
+# Output format
+output:
+  - cli
+  - json
+  - sarif
+
+# Output file paths
+output-file-path: checkov-results
+
+# Compact output for CI/CD
+compact: true
+
+# Show code snippets for failed checks
+download-external-modules: false
+
+# Evaluate variables
+evaluate-variables: true
+
+# Enable secret detection
+enable-secret-scan-all-files: true
+
+# Skip specific directories
+skip-path:
+  - .terraform/
+  - .git/
+  - terraform.tfstate*
+  - backups/
+  - scripts/
+
+# Custom policies directory (if you have custom checks)
+# external-checks-dir:
+#   - custom-policies/
+
+# Suppress specific rules by file
+# skip-suppressions:
+#   - file: modules/security/azure-firewall/main.tf
+#     checks:
+#       - CKV_AZURE_XX
+
+# Baseline file for tracking exceptions
+baseline: .checkov.baseline
