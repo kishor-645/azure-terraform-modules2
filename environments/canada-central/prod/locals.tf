@@ -10,12 +10,117 @@ data "http" "cloudflare_ips_v4" {
 
 locals {
   environment = "prod"
-  region      = "canadacentral"
-  region_code = "cc"
+  region      = var.location
+  
+  # Region code mapping for naming conventions
+  # Maps Azure region names to short codes used in resource naming
+  region_code_map = {
+    canadacentral = "cc"
+    canadaeast    = "ce"
+    eastus        = "eus"
+    eastus2       = "eus2"
+    westus        = "wus"
+    westus2       = "wus2"
+    westus3       = "wus3"
+    centralus     = "cus"
+    southcentralus = "scus"
+    northcentralus = "ncus"
+    uksouth       = "uks"
+    ukwest        = "ukw"
+    westeurope    = "weu"
+    northeurope   = "neu"
+    francecentral = "frc"
+    francesouth   = "frs"
+    germanywestcentral = "dewc"
+    switzerlandnorth = "chn"
+    switzerlandwest = "chw"
+    norwayeast    = "noe"
+    swedencentral = "sec"
+    uaenorth      = "uan"
+    uaecentral    = "uac"
+    japaneast     = "jpe"
+    japanwest     = "jpw"
+    koreacentral  = "krc"
+    koreasouth    = "krs"
+    southeastasia = "sea"
+    eastasia      = "eaa"
+    australiaeast = "aue"
+    australiasoutheast = "ause"
+    australiacentral = "auc"
+    australiacentral2 = "auc2"
+    brazilsouth   = "brs"
+    brazilsoutheast = "brse"
+    southafricanorth = "zan"
+    southafricawest = "zaw"
+    indiacentral  = "inc"
+    indiasouth    = "ins"
+    indiawest     = "inw"
+    chinanorth    = "cnn"
+    chinaeast     = "cne"
+  }
+  
+  # Get region code from map, or use first 4 characters as fallback
+  region_code = lookup(
+    local.region_code_map,
+    var.location,
+    substr(var.location, 0, min(4, length(var.location)))
+  )
+
+  # Human-readable region name mapping (for tags)
+  region_name_map = {
+    canadacentral = "Canada Central"
+    canadaeast    = "Canada East"
+    eastus        = "East US"
+    eastus2       = "East US 2"
+    westus        = "West US"
+    westus2       = "West US 2"
+    westus3       = "West US 3"
+    centralus     = "Central US"
+    southcentralus = "South Central US"
+    northcentralus = "North Central US"
+    uksouth       = "UK South"
+    ukwest        = "UK West"
+    westeurope    = "West Europe"
+    northeurope   = "North Europe"
+    francecentral = "France Central"
+    francesouth   = "France South"
+    germanywestcentral = "Germany West Central"
+    switzerlandnorth = "Switzerland North"
+    switzerlandwest = "Switzerland West"
+    norwayeast    = "Norway East"
+    swedencentral = "Sweden Central"
+    uaenorth      = "UAE North"
+    uaecentral    = "UAE Central"
+    japaneast     = "Japan East"
+    japanwest     = "Japan West"
+    koreacentral  = "Korea Central"
+    koreasouth    = "Korea South"
+    southeastasia = "Southeast Asia"
+    eastasia      = "East Asia"
+    australiaeast = "Australia East"
+    australiasoutheast = "Australia Southeast"
+    australiacentral = "Australia Central"
+    australiacentral2 = "Australia Central 2"
+    brazilsouth   = "Brazil South"
+    brazilsoutheast = "Brazil Southeast"
+    southafricanorth = "South Africa North"
+    southafricawest = "South Africa West"
+    indiacentral  = "India Central"
+    indiasouth    = "India South"
+    indiawest     = "India West"
+    chinanorth    = "China North"
+    chinaeast     = "China East"
+  }
+  
+  region_display_name = lookup(
+    local.region_name_map,
+    var.location,
+    var.location  # Fallback to location value if not in map
+  )
 
   base_common_tags = {
     Environment  = "Production"
-    Region       = "Canada Central"
+    Region       = local.region_display_name
     ManagedBy    = "Terraform"
     Project      = "ERP-Infrastructure"
     CostCenter   = "IT-Operations"
@@ -28,9 +133,6 @@ locals {
   )
 
   naming_prefix = "erp-${local.region_code}-${local.environment}"
-
-  # Single resource group for all resources
-  rg_name = "rg-${local.naming_prefix}"
 
   # ==========================
   # Hub configuration (defaults + overrides)

@@ -2,10 +2,30 @@
 # Copy this file to terraform.tfvars and update values
 
 # ========================================
+# Azure Region/Location
+# ========================================
+# Change this to deploy to a different region (e.g., eastus, westus2, uksouth)
+location = "canadacentral"
+
+# ========================================
 # Azure Subscription & Tenant
 # ========================================
 subscription_id = "45e252f2-d253-4baa-9afd-57a4fbac93f4"
 tenant_id       = "8c440439-38da-4b76-9de0-002f47f4e860"
+
+# ========================================
+# Resource Group Configuration
+# ========================================
+# These resource groups will be created manually and imported into Terraform
+resource_group_name          = "rg-erp-cc-prod"
+aks_node_resource_group_name = "rg-aks-canadacentral-prod-nodes"
+
+# ========================================
+# Storage and Registry Configuration
+# ========================================
+# Exact names without dynamic suffixes
+container_registry_name = "acrerpccprod"
+storage_account_name    = "sterpccprod"
 
 # ========================================
 # Deployment Configuration

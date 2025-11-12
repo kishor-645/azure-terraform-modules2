@@ -5,7 +5,6 @@ This module creates bidirectional VNet peering between hub and spoke virtual net
 ## Features
 
 - ✅ Bidirectional hub-spoke VNet peering
-- ✅ Gateway transit support (for VPN/ExpressRoute)
 - ✅ Forwarded traffic allowed (for Azure Firewall routing)
 - ✅ Automatic peering name generation
 - ✅ Proper dependency management (hub-to-spoke created first)
@@ -42,26 +41,7 @@ module "vnet_peering" {
 }
 ```
 
-### With Gateway Transit (VPN/ExpressRoute)
 
-```hcl
-module "vnet_peering" {
-  source = "../../modules/networking/vnet-peering"
-
-  # Hub VNet details
-  hub_vnet_id              = module.hub_vnet.vnet_id
-  hub_vnet_name            = module.hub_vnet.vnet_name
-  hub_resource_group_name  = "rg-hub-canadacentral-prod"
-
-  # Spoke VNet details
-  spoke_vnet_id              = module.spoke_vnet.vnet_id
-  spoke_vnet_name            = module.spoke_vnet.vnet_name
-  spoke_resource_group_name  = "rg-spoke-canadacentral-prod"
-
-  # Enable gateway transit (hub has VPN gateway)
-  enable_gateway_transit = true
-  use_hub_gateway        = true
-}
 ```
 
 ### With Custom Peering Names
@@ -105,8 +85,6 @@ module "vnet_peering" {
 | spoke_resource_group_name | Spoke VNet resource group | string | Yes | - |
 | hub_to_spoke_peering_name | Custom hub-to-spoke peering name | string | No | Auto-generated |
 | spoke_to_hub_peering_name | Custom spoke-to-hub peering name | string | No | Auto-generated |
-| enable_gateway_transit | Enable gateway transit | bool | No | false |
-| use_hub_gateway | Allow spoke to use hub gateway | bool | No | false |
 
 ## Outputs
 
@@ -130,18 +108,7 @@ Possible peering states:
 
 Both peerings should show **Connected** state for successful communication.
 
-## Gateway Transit
 
-**When to enable:**
-- You have VPN Gateway or ExpressRoute Gateway in hub VNet
-- Spoke needs to access on-premises network through hub gateway
-
-**Requirements:**
-- VPN/ExpressRoute Gateway must exist in hub VNet before enabling
-- Set `enable_gateway_transit = true` on hub
-- Set `use_hub_gateway = true` on spoke
-
-**Current Project:** Gateway transit disabled (no VPN gateway deployed initially)
 
 ## Traffic Flow
 

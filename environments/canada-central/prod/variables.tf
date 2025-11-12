@@ -1,5 +1,16 @@
 # Canada Central Production Environment Variables
 
+variable "location" {
+  description = "Azure region/location for all resources (e.g., canadacentral, eastus, westus2)"
+  type        = string
+  default     = "canadacentral"
+  
+  validation {
+    condition     = can(regex("^[a-z0-9]+$", var.location))
+    error_message = "Location must be a valid Azure region name (lowercase, no spaces)."
+  }
+}
+
 variable "subscription_id" {
   description = "Azure subscription ID"
   type        = string
@@ -9,6 +20,38 @@ variable "tenant_id" {
   description = "Azure AD tenant ID"
   type        = string
   default     = null
+}
+
+# ========================================
+# Resource Group Configuration
+# ========================================
+
+variable "resource_group_name" {
+  description = "Name of the main resource group (will be imported, not created)"
+  type        = string
+  default     = "rg-erp-cc-prod"
+}
+
+variable "aks_node_resource_group_name" {
+  description = "Name of the AKS node resource group (will be imported, not created)"
+  type        = string
+  default     = "rg-aks-canadacentral-prod-nodes"
+}
+
+# ========================================
+# Storage and Registry Configuration
+# ========================================
+
+variable "container_registry_name" {
+  description = "Name of the Azure Container Registry (exact name, no dynamic suffixes)"
+  type        = string
+  default     = "acrerpccprod"
+}
+
+variable "storage_account_name" {
+  description = "Name of the storage account (exact name, no dynamic suffixes)"
+  type        = string
+  default     = "sterpccprod"
 }
 
 variable "deployment_stage" {

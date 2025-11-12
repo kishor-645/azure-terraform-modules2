@@ -59,17 +59,3 @@ variable "spoke_to_hub_peering_name" {
     error_message = "Peering name must contain only alphanumeric characters, hyphens, and underscores."
   }
 }
-
-variable "enable_gateway_transit" {
-  description = "Enable gateway transit (requires VPN/ExpressRoute gateway in hub)"
-  type        = bool
-  default     = false
-}
-
-variable "use_hub_gateway" {
-  description = "Allow spoke to use hub gateway (requires enable_gateway_transit = true)"
-  type        = bool
-  default     = false
-}
-
-# Note: Local variables moved to main.tf for better resource access

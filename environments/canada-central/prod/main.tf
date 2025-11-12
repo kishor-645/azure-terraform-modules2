@@ -2,13 +2,43 @@
 # Single Resource Group Architecture
 
 # ========================================
-# Resource Group
+# Resource Group - Import Existing
 # ========================================
+# These resource groups are created manually and imported into Terraform
+# The service principal has Owner access on both resource groups
+#
+# To import these resource groups, run:
+# terraform import azurerm_resource_group.main /subscriptions/45e252f2-d253-4baa-9afd-57a4fbac93f4/resourceGroups/rg-erp-cc-prod
+# terraform import azurerm_resource_group.aks_nodes /subscriptions/45e252f2-d253-4baa-9afd-57a4fbac93f4/resourceGroups/rg-aks-canadacentral-prod-nodes
+
+import {
+  to = azurerm_resource_group.main
+  id = "/subscriptions/${var.subscription_id}/resourceGroups/${var.resource_group_name}"
+}
 
 resource "azurerm_resource_group" "main" {
-  name     = local.rg_name
+  name     = var.resource_group_name
   location = local.region
   tags     = local.common_tags
+
+  lifecycle {
+    prevent_destroy = true
+  }
+}
+
+import {
+  to = azurerm_resource_group.aks_nodes
+  id = "/subscriptions/${var.subscription_id}/resourceGroups/${var.aks_node_resource_group_name}"
+}
+
+resource "azurerm_resource_group" "aks_nodes" {
+  name     = var.aks_node_resource_group_name
+  location = local.region
+  tags     = local.common_tags
+
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 # ========================================
@@ -121,17 +151,14 @@ locals {
 module "vnet_peering" {
   for_each = local.spokes
   source   = "../../../modules/networking/vnet-peering"
-  
+
   hub_vnet_name           = module.hub_vnet.vnet_name
   hub_vnet_id             = module.hub_vnet.vnet_id
   hub_resource_group_name = azurerm_resource_group.main.name
-  
+
   spoke_vnet_name           = each.value.vnet_name
   spoke_vnet_id             = each.value.vnet_id
   spoke_resource_group_name = azurerm_resource_group.main.name
-  
-  enable_gateway_transit = false
-  use_hub_gateway        = false
 }
 
 # ========================================
@@ -462,8 +489,8 @@ module "key_vault" {
 
 module "storage_account" {
   source = "../../../modules/storage/storage-account"
-  
-  storage_account_name = replace("st${local.naming_prefix}", "-", "")
+
+  storage_account_name = var.storage_account_name
   location             = local.region
   resource_group_name  = azurerm_resource_group.main.name
   
@@ -486,17 +513,17 @@ module "storage_account" {
 
 module "container_registry" {
   source = "../../../modules/storage/container-registry"
-  
-  registry_name      = "acr${replace(local.naming_prefix, "-", "")}"
+
+  registry_name      = var.container_registry_name
   location           = local.region
   resource_group_name = azurerm_resource_group.main.name
-  
+
   sku = "Premium"
-  
+
   enable_private_endpoint = true
   private_endpoint_subnet_id = local.primary_spoke.private_endpoints_subnet_id
   private_dns_zone_ids = [module.private_dns_zones["acr"].dns_zone_id]
-  
+
   tags = local.common_tags
 }
 

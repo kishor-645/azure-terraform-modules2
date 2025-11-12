@@ -115,10 +115,8 @@ Edit `terraform.tfvars`:
 
 ```hcl
 # Basic
+location         = "canadacentral"  # Azure region (e.g., eastus, westus2, uksouth)
 subscription_id  = "your-subscription-id"
-environment      = "prod"
-region           = "canadacentral"
-region_abbr      = "cc"
 
 # Deployment
 deployment_stage = "stage1"  # Change to "stage2" after Stage 1

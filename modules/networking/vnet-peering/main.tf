@@ -1,5 +1,5 @@
 # VNet Peering Module
-# Creates bidirectional hub-spoke VNet peering with gateway transit support
+# Creates bidirectional hub-spoke VNet peering
 
 terraform {
   required_version = ">= 1.10.3"
