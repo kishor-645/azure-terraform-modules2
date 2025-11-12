@@ -36,8 +36,8 @@ resource "azurerm_virtual_network_peering" "hub_to_spoke" {
   allow_virtual_network_access = true
   allow_forwarded_traffic      = true
 
-  # Gateway transit (hub provides gateway)
-  allow_gateway_transit        = var.enable_gateway_transit
+  # Gateway transit disabled - not using VPN Gateway
+  allow_gateway_transit        = false
   use_remote_gateways          = false
 }
 
@@ -55,9 +55,9 @@ resource "azurerm_virtual_network_peering" "spoke_to_hub" {
   allow_virtual_network_access = true
   allow_forwarded_traffic      = true
 
-  # Gateway transit (spoke uses hub gateway)
+  # Gateway transit disabled - not using VPN Gateway
   allow_gateway_transit        = false
-  use_remote_gateways          = var.enable_gateway_transit && var.use_hub_gateway
+  use_remote_gateways          = false
 
   # Ensure hub peering is created first
   depends_on = [

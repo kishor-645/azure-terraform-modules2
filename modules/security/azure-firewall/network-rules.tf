@@ -1,5 +1,6 @@
 # Network Rules
 # Manages outbound Layer 3/4 network connectivity
+# Based on Azure Firewall Policy requirements for AKS and Azure services
 
 # ========================================
 # Network Rule Collection Group
@@ -11,205 +12,110 @@ resource "azurerm_firewall_policy_rule_collection_group" "network" {
   priority           = 200
 
   # ========================================
-  # Azure Services Access
+  # Azure Services - Priority 100
   # ========================================
   network_rule_collection {
-    name     = "allow-azure-services"
+    name     = "Azure-Services"
     priority = 100
     action   = "Allow"
 
-    # Azure Monitor / Log Analytics
+    # Azure Services from AKS
     rule {
-      name = "allow-azure-monitor"
+      name = "Azure-Services"
       protocols = ["TCP"]
 
-      source_addresses = ["*"]
+      source_addresses = ["10.1.16.0/22"]
 
-      destination_addresses = ["AzureMonitor"]
+      destination_addresses = ["AzureCloud.CanadaCentral"]
       destination_ports     = ["443"]
-    }
-
-    # Azure Storage (for diagnostics, backups)
-    rule {
-      name = "allow-azure-storage"
-      protocols = ["TCP", "UDP"]
-
-      source_addresses = ["*"]
-
-      destination_addresses = ["Storage"]
-      destination_ports     = ["443", "445"]  # HTTPS, SMB
-    }
-
-    # Azure Container Registry
-    rule {
-      name = "allow-azure-acr"
-      protocols = ["TCP"]
-
-      source_addresses = ["*"]
-
-      destination_addresses = ["AzureContainerRegistry"]
-      destination_ports     = ["443"]
-    }
-
-    # Azure Key Vault
-    rule {
-      name = "allow-azure-keyvault"
-      protocols = ["TCP"]
-
-      source_addresses = ["*"]
-
-      destination_addresses = ["AzureKeyVault"]
-      destination_ports     = ["443"]
-    }
-
-    # Azure SQL / PostgreSQL
-    rule {
-      name = "allow-azure-database"
-      protocols = ["TCP"]
-
-      source_addresses = ["*"]
-
-      destination_addresses = ["Sql"]
-      destination_ports     = ["1433", "5432"]
     }
   }
 
   # ========================================
-  # AKS Required Outbound
+  # DNS - Priority 110
   # ========================================
   network_rule_collection {
-    name     = "allow-aks-required"
+    name     = "DNS"
     priority = 110
     action   = "Allow"
 
-    # AKS API Server (managed by Azure)
+    # DNS/NTP from Hub and Spoke
     rule {
-      name = "allow-aks-apiserver"
-      protocols = ["TCP"]
+      name = "DNS-NTP"
+      protocols = ["TCP", "UDP"]
 
-      source_addresses = ["*"]
-
-      destination_addresses = ["AzureCloud"]
-      destination_ports     = ["443", "9000"]
-    }
-
-    # NTP (Network Time Protocol) - Critical for AKS
-    rule {
-      name = "allow-ntp"
-      protocols = ["UDP"]
-
-      source_addresses = ["*"]
-
-      destination_addresses = [
-        "91.189.89.198",    # ntp.ubuntu.com
-        "91.189.94.4",      # ntp.ubuntu.com
-        "91.189.91.157",    # ntp.ubuntu.com
-        "time.windows.com"
+      source_addresses = [
+        "10.0.0.0/16",  # Hub VNet
+        "10.1.0.0/16"   # Spoke VNet
       ]
-      destination_ports = ["123"]
-    }
 
-    # DNS (if not using Azure DNS)
-    rule {
-      name = "allow-external-dns"
-      protocols = ["UDP", "TCP"]
-
-      source_addresses = ["*"]
-
-      destination_addresses = [
-        "8.8.8.8",      # Google DNS
-        "8.8.4.4",      # Google DNS
-        "1.1.1.1",      # Cloudflare DNS
-        "1.0.0.1"       # Cloudflare DNS
-      ]
-      destination_ports = ["53"]
+      destination_addresses = ["*"]
+      destination_ports     = ["53", "123"]
     }
   }
 
   # ========================================
-  # Custom Outbound Rules
+  # NTP - Priority 120
   # ========================================
   network_rule_collection {
-    name     = "allow-custom-outbound"
+    name     = "NTP"
     priority = 120
     action   = "Allow"
 
-    # Allow specific external IPs (customize as needed)
+    # NTP from AKS
     rule {
-      name = "allow-external-apis"
-      protocols = ["TCP"]
+      name = "NTP"
+      protocols = ["UDP"]
 
-      source_addresses = var.custom_source_addresses
+      source_addresses = ["10.1.16.0/22"]
 
-      destination_addresses = var.custom_destination_addresses
-      destination_ports     = var.custom_destination_ports
+      destination_addresses = ["*"]
+      destination_ports     = ["123"]
     }
   }
 
   # ========================================
-  # Inter-VNet Communication
+  # Database - Priority 130
   # ========================================
   network_rule_collection {
-    name     = "allow-vnet-to-vnet"
+    name     = "Database"
     priority = 130
     action   = "Allow"
 
-    # Hub to Spoke
+    # PostgreSQL from AKS
     rule {
-      name = "allow-hub-to-spoke"
-      protocols = ["Any"]
+      name = "Postgresql"
+      protocols = ["TCP"]
 
-      source_addresses      = [var.hub_vnet_cidr]
-      destination_addresses = [var.spoke_vnet_cidr]
-      destination_ports     = ["*"]
-    }
+      source_addresses = ["10.1.16.0/22"]
 
-    # Spoke to Hub
-    rule {
-      name = "allow-spoke-to-hub"
-      protocols = ["Any"]
-
-      source_addresses      = [var.spoke_vnet_cidr]
-      destination_addresses = [var.hub_vnet_cidr]
-      destination_ports     = ["*"]
+      destination_addresses = ["10.1.29.0/24"]  # Private endpoints subnet
+      destination_ports     = ["5432"]
     }
   }
 
   # ========================================
-  # Commented Examples - Additional Rules
+  # Jumpbox-Internet - Priority 200
   # ========================================
+  network_rule_collection {
+    name     = "Jumpbox-Internet"
+    priority = 200
+    action   = "Allow"
 
-  # Example: Allow outbound to specific on-premises network
-  # network_rule_collection {
-  #   name     = "allow-to-onprem"
-  #   priority = 140
-  #   action   = "Allow"
-  #
-  #   rule {
-  #     name = "allow-onprem-network"
-  #     protocols = ["Any"]
-  #     
-  #     source_addresses      = ["*"]
-  #     destination_addresses = ["192.168.0.0/16"]  # On-premises CIDR
-  #     destination_ports     = ["*"]
-  #   }
-  # }
+    # Jumpbox Internet Access
+    rule {
+      name = "Jumpbox-Internet"
+      protocols = ["TCP"]
 
-  # Example: Deny all other outbound traffic (explicit deny)
-  # network_rule_collection {
-  #   name     = "deny-all-other"
-  #   priority = 999
-  #   action   = "Deny"
-  #
-  #   rule {
-  #     name = "deny-all"
-  #     protocols = ["Any"]
-  #     
-  #     source_addresses      = ["*"]
-  #     destination_addresses = ["*"]
-  #     destination_ports     = ["*"]
-  #   }
-  # }
+      source_addresses = [
+        "10.0.4.0/24",      # Hub shared services subnet
+        "10.1.30.128/27"    # Spoke jumpbox subnet
+      ]
+
+      destination_addresses = ["*"]
+      destination_ports     = ["80", "443"]
+    }
+  }
 
   depends_on = [
     azurerm_firewall_policy.this

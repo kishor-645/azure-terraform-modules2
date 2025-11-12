@@ -223,22 +223,9 @@ Your infrastructure is now ready. Here's what you have:
 ### Next Steps
 1. **Deploy Applications**: Deploy your ERP applications to AKS
 2. **Configure DNS**: Point your domain to Istio Load Balancer IP
-3. **Set Up CI/CD**: Configure Azure DevOps pipelines (see [DEPLOYMENT-GUIDE.md](../DEPLOYMENT-GUIDE.md))
+3. **Set Up CI/CD**: Configure Azure DevOps pipelines (see [Pipeline Guide](../pipelines/README.md))
 4. **Configure Monitoring**: Set up alerts and dashboards
 5. **Review Security**: Review firewall rules and NSG configurations
-
-## 📊 Cost Summary
-
-Your infrastructure will cost approximately:
-
-| Service | Monthly Cost |
-|---------|-------------|
-| Azure Firewall Premium | $1,350 |
-| AKS (4 nodes) | $1,000 - $1,500 |
-| Azure Bastion | $295 |
-| PostgreSQL | $200 - $400 |
-| Storage & Monitoring | $100 - $200 |
-| **Total** | **$3,445 - $3,945** |
 
 ## 🆘 Troubleshooting
 
@@ -279,9 +266,9 @@ az vm list-usage --location canadacentral --output table
 
 ## 📚 Additional Resources
 
-- **[Deployment Steps](DEPLOYMENT-STEPS.md)** - Detailed step-by-step guide
-- **[Environment Resources](ENVIRONMENT-RESOURCES.md)** - Complete resource list
-- **[Modules Guide](MODULES-GUIDE.md)** - Module usage reference
+- **[Deployment Guide](DEPLOYMENT.md)** - Detailed step-by-step guide
+- **[Architecture](ARCHITECTURE.md)** - Network topology and design
+- **[Modules Guide](MODULES.md)** - Module usage reference
 - **[Troubleshooting](TROUBLESHOOTING.md)** - Common issues and solutions
 
 ## 🔄 Clean Up (Optional)

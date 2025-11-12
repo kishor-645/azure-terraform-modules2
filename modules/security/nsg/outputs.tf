@@ -81,7 +81,7 @@ output "associated_subnet_ids" {
 
 output "subnet_association_count" {
   description = "Number of subnets associated with this NSG"
-  value       = length(azurerm_subnet_network_security_group_association.this)
+  value       = length(var.subnet_ids)
 }
 
 # ========================================
@@ -97,6 +97,6 @@ output "nsg_details" {
     resource_group_name  = azurerm_network_security_group.this.resource_group_name
     inbound_rule_count   = length(azurerm_network_security_rule.inbound)
     outbound_rule_count  = length(azurerm_network_security_rule.outbound)
-    associated_subnets   = length(azurerm_subnet_network_security_group_association.this)
+    associated_subnets   = length(var.subnet_ids)
   }
 }

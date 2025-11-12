@@ -139,13 +139,15 @@ module "vnet_peering" {
 # ========================================
 
 locals {
+  # Private DNS zones for private endpoints
+  # Note: AKS private DNS zone is automatically created when private_cluster_enabled=true
+  # Do NOT manually create it as it will conflict with Azure's automatic creation
   private_dns_zones = {
     acr      = "privatelink.azurecr.io"
     keyvault = "privatelink.vaultcore.azure.net"
     blob     = "privatelink.blob.core.windows.net"
     file     = "privatelink.file.core.windows.net"
     postgres = "privatelink.postgres.database.azure.com"
-    aks      = "privatelink.${replace(local.region, "-", "")}.azmk8s.io"
   }
 }
 
@@ -230,18 +232,195 @@ module "route_table_aks" {
 }
 
 # ========================================
+# Security - Network Security Groups (NSGs)
+# ========================================
+
+# NSG for AKS Node Pool Subnet
+module "nsg_aks" {
+  source = "../../../modules/security/nsg"
+
+  nsg_name            = "nsg-aks-${local.region}-${local.environment}"
+  location            = local.region
+  resource_group_name = azurerm_resource_group.main.name
+
+  # Inbound rules for AKS
+  inbound_rules = [
+    {
+      name                       = "Allow-LoadBalancer"
+      priority                   = 100
+      access                     = "Allow"
+      protocol                   = "*"
+      source_port_range          = "*"
+      destination_port_range     = "*"
+      source_address_prefix      = "AzureLoadBalancer"
+      destination_address_prefix = "*"
+      description                = "Allow Azure Load Balancer health probes"
+    },
+    {
+      name                       = "Allow-VNet-Inbound"
+      priority                   = 110
+      access                     = "Allow"
+      protocol                   = "*"
+      source_port_range          = "*"
+      destination_port_range     = "*"
+      source_address_prefix      = "VirtualNetwork"
+      destination_address_prefix = "VirtualNetwork"
+      description                = "Allow traffic within VNet"
+    },
+    {
+      name                       = "Deny-All-Inbound"
+      priority                   = 4096
+      access                     = "Deny"
+      protocol                   = "*"
+      source_port_range          = "*"
+      destination_port_range     = "*"
+      source_address_prefix      = "*"
+      destination_address_prefix = "*"
+      description                = "Deny all other inbound traffic"
+    }
+  ]
+
+  # Outbound rules for AKS
+  outbound_rules = [
+    {
+      name                       = "Allow-AzureCloud"
+      priority                   = 100
+      access                     = "Allow"
+      protocol                   = "Tcp"
+      source_port_range          = "*"
+      destination_port_ranges    = ["443"]
+      source_address_prefix      = "*"
+      destination_address_prefix = "AzureCloud"
+      description                = "Allow outbound to Azure services"
+    },
+    {
+      name                       = "Allow-Internet-HTTPS"
+      priority                   = 110
+      access                     = "Allow"
+      protocol                   = "Tcp"
+      source_port_range          = "*"
+      destination_port_ranges    = ["80", "443"]
+      source_address_prefix      = "*"
+      destination_address_prefix = "Internet"
+      description                = "Allow outbound HTTP/HTTPS to Internet"
+    },
+    {
+      name                       = "Allow-DNS"
+      priority                   = 120
+      access                     = "Allow"
+      protocol                   = "*"
+      source_port_range          = "*"
+      destination_port_range     = "53"
+      source_address_prefix      = "*"
+      destination_address_prefix = "*"
+      description                = "Allow DNS queries"
+    },
+    {
+      name                       = "Allow-NTP"
+      priority                   = 130
+      access                     = "Allow"
+      protocol                   = "Udp"
+      source_port_range          = "*"
+      destination_port_range     = "123"
+      source_address_prefix      = "*"
+      destination_address_prefix = "*"
+      description                = "Allow NTP time sync"
+    },
+    {
+      name                       = "Allow-VNet-Outbound"
+      priority                   = 140
+      access                     = "Allow"
+      protocol                   = "*"
+      source_port_range          = "*"
+      destination_port_range     = "*"
+      source_address_prefix      = "VirtualNetwork"
+      destination_address_prefix = "VirtualNetwork"
+      description                = "Allow traffic within VNet"
+    }
+  ]
+
+  subnet_ids                 = [for s in local.spokes : s.aks_node_pool_subnet_id]
+  log_analytics_workspace_id = module.log_analytics.workspace_id
+
+  tags = local.common_tags
+
+  depends_on = [
+    module.spoke_vnets
+  ]
+}
+
+# NSG for Private Endpoints Subnet
+module "nsg_private_endpoints" {
+  source = "../../../modules/security/nsg"
+
+  nsg_name            = "nsg-pe-${local.region}-${local.environment}"
+  location            = local.region
+  resource_group_name = azurerm_resource_group.main.name
+
+  # Inbound rules for Private Endpoints
+  inbound_rules = [
+    {
+      name                       = "Allow-AKS-to-PrivateEndpoints"
+      priority                   = 100
+      access                     = "Allow"
+      protocol                   = "Tcp"
+      source_port_range          = "*"
+      destination_port_ranges    = ["443", "5432"]
+      source_address_prefix      = "10.1.16.0/22"  # AKS subnet
+      destination_address_prefix = "10.1.29.0/24"  # Private endpoints subnet
+      description                = "Allow AKS to access private endpoints (HTTPS, PostgreSQL)"
+    },
+    {
+      name                       = "Allow-VNet-Inbound"
+      priority                   = 110
+      access                     = "Allow"
+      protocol                   = "*"
+      source_port_range          = "*"
+      destination_port_range     = "*"
+      source_address_prefix      = "VirtualNetwork"
+      destination_address_prefix = "VirtualNetwork"
+      description                = "Allow traffic within VNet"
+    }
+  ]
+
+  # Outbound rules for Private Endpoints
+  outbound_rules = [
+    {
+      name                       = "Allow-VNet-Outbound"
+      priority                   = 100
+      access                     = "Allow"
+      protocol                   = "*"
+      source_port_range          = "*"
+      destination_port_range     = "*"
+      source_address_prefix      = "VirtualNetwork"
+      destination_address_prefix = "VirtualNetwork"
+      description                = "Allow traffic within VNet"
+    }
+  ]
+
+  subnet_ids                 = [for s in local.spokes : s.private_endpoints_subnet_id]
+  log_analytics_workspace_id = module.log_analytics.workspace_id
+
+  tags = local.common_tags
+
+  depends_on = [
+    module.spoke_vnets
+  ]
+}
+
+# ========================================
 # Security - Azure Bastion
 # ========================================
 
 module "azure_bastion" {
   source = "../../../modules/security/bastion"
-  
+
   bastion_name            = "bastion-${local.region}-${local.environment}"
   location                = local.region
   resource_group_name     = azurerm_resource_group.main.name
   bastion_subnet_id       = module.hub_vnet.bastion_subnet_id
   bastion_public_ip_name  = "pip-bastion-${local.region}-${local.environment}"
-  
+
   bastion_sku            = "Standard"
   copy_paste_enabled     = true
   file_copy_enabled      = true

@@ -132,7 +132,6 @@ variable "subnet_ids" {
 variable "log_analytics_workspace_id" {
   description = "ID of the Log Analytics workspace for NSG diagnostics"
   type        = string
-  default     = null
 }
 
 # ========================================

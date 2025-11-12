@@ -1,28 +1,19 @@
-# ERP Infrastructure - Azure Terraform
+# Azure ERP Infrastructure - Terraform
 
-Production-ready infrastructure for ERP system on Azure with simplified single-region architecture.
-
-## 📚 Documentation
-
-### Getting Started
-- **[Deployment Steps](docs/DEPLOYMENT-STEPS.md)** - Complete step-by-step deployment guide from bootstrap to production
-- **[Environment Resources](docs/ENVIRONMENT-RESOURCES.md)** - Detailed list of all resources that will be created
-
-### Reference Guides
-- **[Modules Guide](docs/MODULES-GUIDE.md)** - How to use each Terraform module with examples
-- **[Architecture](docs/ARCHITECTURE.md)** - Architecture overview and design decisions
-- **[Cost Estimation](docs/COST-ESTIMATION.md)** - Detailed cost breakdown
-
-### Operations
-- **[Azure DevOps Pipelines](DEPLOYMENT-GUIDE.md)** - CI/CD pipeline setup and usage
-- **[Troubleshooting](docs/TROUBLESHOOTING.md)** - Common issues and solutions
+Production-ready enterprise infrastructure for ERP systems on Azure using hub-spoke network topology with comprehensive security and monitoring.
 
 ## 🚀 Quick Start
 
-### Option 1: Manual Deployment (Recommended for first-time)
+**New to this project?** Start here:
+
+1. **[Quick Start Guide](docs/QUICK-START.md)** - Deploy in 30 minutes
+2. **[Architecture Overview](docs/ARCHITECTURE.md)** - Understand the design
+3. **[Troubleshooting](docs/TROUBLESHOOTING.md)** - Common issues and solutions
+
+**Basic deployment:**
 
 ```bash
-# 1. Bootstrap (create state storage and Key Vault)
+# 1. Bootstrap (create state storage)
 cd 0-bootstrap
 terraform init
 terraform apply -var-file="bootstrap.tfvars"
@@ -30,204 +21,151 @@ terraform apply -var-file="bootstrap.tfvars"
 # 2. Deploy infrastructure
 cd ../environments/canada-central/prod
 terraform init
-terraform apply  # Stage 1
-
-# 3. Get Istio LB IP and deploy Stage 2
-./scripts/get-istio-lb-ip.sh
-# Update terraform.tfvars with Istio IP and set deployment_stage = "stage2"
-terraform apply  # Stage 2
+terraform apply
 ```
 
-See **[Deployment Steps](docs/DEPLOYMENT-STEPS.md)** for detailed instructions.
+## 📚 Documentation
 
-### Option 2: Azure DevOps Pipelines
+| Document | Purpose |
+|----------|---------|
+| [Quick Start](docs/QUICK-START.md) | 30-minute deployment guide |
+| [Deployment Guide](docs/DEPLOYMENT.md) | Complete step-by-step instructions |
+| [Architecture](docs/ARCHITECTURE.md) | Network topology and design decisions |
+| [Modules Guide](docs/MODULES.md) | How to use Terraform modules |
+| [Troubleshooting](docs/TROUBLESHOOTING.md) | Common issues and solutions |
+| [Bootstrap Guide](0-bootstrap/README.md) | Bootstrap infrastructure setup |
+| [Pipeline Guide](pipelines/README.md) | CI/CD with Azure DevOps |
 
-See **[DEPLOYMENT-GUIDE.md](DEPLOYMENT-GUIDE.md)** for CI/CD pipeline setup.
+## 🏗️ What This Deploys
 
-## 🏗️ Infrastructure Overview
+### Infrastructure Overview
 
-### Architecture
-- **Region**: Canada Central only (simplified from multi-region)
-- **Network**: Hub-Spoke topology with Azure Firewall Premium
-- **Compute**: Private AKS cluster with Istio service mesh (inbuilt)
-- **Database**: PostgreSQL Flexible Server with private endpoint
-- **Storage**: Storage Account, Container Registry, Key Vault (all with private endpoints)
-- **Security**: Azure Bastion, NSGs, Route Tables, Private DNS Zones
-- **Monitoring**: Log Analytics, Application Insights, Action Groups
+**Network Architecture:**
+- Hub-Spoke topology with VNet peering
+- Hub VNet (10.0.0.0/16) - Centralized security services
+- Spoke VNet (10.1.0.0/16) - Application workloads
+- Azure Firewall Premium for centralized egress control
+- Private DNS zones for all Azure services
+
+**Compute Resources:**
+- Private AKS cluster with Istio service mesh
+- System node pool (auto-scaling 1-5 nodes)
+- User node pool (auto-scaling 1-5 nodes)
+- Jumpbox VM for management
+- Agent VM for CI/CD
+
+**Data & Storage:**
+- PostgreSQL Flexible Server (private endpoint)
+- Storage Account with blob and file shares
+- Azure Container Registry (Premium)
+- Azure Key Vault (Premium)
+
+**Security:**
+- Azure Bastion for secure VM access
+- Network Security Groups on all subnets
+- User-defined routes for traffic control
+- All PaaS services use private endpoints
+
+**Monitoring:**
+- Log Analytics Workspace
+- Application Insights
+- Diagnostic settings on all resources
 
 ### Key Features
-✅ **Single Resource Group** - All resources in one RG per environment
-✅ **Private Everything** - No public endpoints (except Firewall & Bastion)
-✅ **Shared AKS Subnet** - System and user node pools use same subnet
-✅ **Istio Inbuilt** - No manual installation, enabled as AKS feature
-✅ **Two-Stage Deployment** - loadBalancer → userDefinedRouting
-✅ **Centralized Security** - All traffic through Azure Firewall
-✅ **Comprehensive Monitoring** - All resources log to Log Analytics
+
+- ✅ **Zero Trust Network** - All resources private, no public endpoints
+- ✅ **Istio Service Mesh** - Built-in AKS add-on for microservices
+- ✅ **Two-Stage Deployment** - Avoids circular dependencies
+- ✅ **Centralized Security** - All traffic inspected by Azure Firewall
+- ✅ **Comprehensive Logging** - All resources send logs to Log Analytics
+- ✅ **High Availability** - Multi-zone deployment for critical services
+- ✅ **Auto-Scaling** - AKS node pools scale based on demand
 
 ### Resources Created
-- **~45-50 Azure resources** per environment
-- See **[Environment Resources](docs/ENVIRONMENT-RESOURCES.md)** for complete list
 
-### Cost Estimate
-**$3,445 - $5,945 USD/month** (varies by node count and usage)
-- Azure Firewall Premium: ~$1,350/month
-- AKS Cluster: ~$1,000-$3,500/month
-- Azure Bastion: ~$295/month
-- Other services: ~$800/month
-
-See **[Cost Estimation](docs/COST-ESTIMATION.md)** for detailed breakdown.
-
----
+Approximately **45-50 Azure resources** including:
+- 2 VNets with 8 subnets
+- 1 AKS cluster with 2 node pools
+- 1 Azure Firewall Premium
+- 1 Azure Bastion
+- 1 PostgreSQL Flexible Server
+- 1 Storage Account
+- 1 Container Registry
+- 1 Key Vault
+- 2 Virtual Machines
+- 6 Private DNS Zones
+- Multiple NSGs, Route Tables, and Private Endpoints
 
 ## 📁 Repository Structure
 
 ```
 .
-├── 0-bootstrap/                    # Bootstrap infrastructure (state storage, Key Vault)
+├── 0-bootstrap/              # Bootstrap infrastructure (state storage, Key Vault)
 ├── environments/
 │   └── canada-central/
-│       ├── prod/                   # Production environment
-│       └── dev/                    # Development environment
-├── modules/                        # Reusable Terraform modules
-│   ├── networking/                 # VNets, peering, DNS zones
-│   ├── security/                   # Firewall, Bastion, NSGs, route tables
-│   ├── compute/                    # AKS, VMs
-│   ├── storage/                    # Storage Account, ACR, Key Vault
-│   ├── data/                       # PostgreSQL
-│   └── monitoring/                 # Log Analytics, App Insights
-├── scripts/                        # Helper scripts
-├── pipelines/                      # Azure DevOps pipelines
-└── docs/                          # Documentation
+│       └── prod/             # Production environment configuration
+├── modules/                  # Reusable Terraform modules
+│   ├── networking/           # VNets, peering, DNS zones
+│   ├── security/             # Firewall, Bastion, NSGs, route tables
+│   ├── compute/              # AKS cluster, VMs
+│   ├── storage/              # Storage Account, ACR, Key Vault
+│   ├── data/                 # PostgreSQL database
+│   └── monitoring/           # Log Analytics, Application Insights
+├── scripts/                  # Helper scripts for deployment and management
+├── pipelines/                # Azure DevOps CI/CD pipelines
+└── docs/                     # Comprehensive documentation
 ```
-
----
 
 ## 🛠️ Prerequisites
 
-- **Azure CLI** >= 2.50.0
-- **Terraform** >= 1.10.3
-- **kubectl** >= 1.28.0
-- **Azure Subscription** with Owner/Contributor role
-- **SSH Key Pair** for VM access
+**Required Tools:**
+- Azure CLI >= 2.50.0
+- Terraform >= 1.10.3
+- kubectl >= 1.28.0
 
----
+**Azure Requirements:**
+- Active Azure subscription
+- Owner or Contributor role
+- SSH key pair for VM access
 
-## 📖 Detailed Guides
-
-### For First-Time Deployment
-1. Read **[Deployment Steps](docs/DEPLOYMENT-STEPS.md)** - Complete walkthrough
-2. Review **[Environment Resources](docs/ENVIRONMENT-RESOURCES.md)** - Know what will be created
-3. Check **[Cost Estimation](docs/COST-ESTIMATION.md)** - Understand costs
-
-### For Module Development
-1. Read **[Modules Guide](docs/MODULES-GUIDE.md)** - Learn how to use modules
-2. Review **[Architecture](docs/ARCHITECTURE.md)** - Understand design decisions
-
-### For CI/CD Setup
-1. Read **[DEPLOYMENT-GUIDE.md](DEPLOYMENT-GUIDE.md)** - Azure DevOps pipeline setup
-
-### For Troubleshooting
-1. Check **[Troubleshooting](docs/TROUBLESHOOTING.md)** - Common issues and solutions
-
----
-
-## 🎯 Environments
-
-| Environment | Path | Purpose |
-|-------------|------|---------|
-| **Production** | `environments/canada-central/prod/` | Production workloads |
-| **Development** | `environments/canada-central/dev/` | Development and testing |
-
----
+**Verify installations:**
+```bash
+az --version
+terraform --version
+kubectl version --client
+```
 
 ## 🔄 Two-Stage Deployment
 
-### Stage 1: Initial Deployment (loadBalancer)
-- Deploy all infrastructure
-- AKS uses Azure Load Balancer for egress
-- Istio is enabled and gets a Load Balancer IP
+This infrastructure uses a two-stage deployment to avoid circular dependencies:
 
-### Stage 2: Firewall Routing (userDefinedRouting)
-- Switch AKS to use Azure Firewall for egress
-- Apply route table to AKS subnet
-- All traffic flows through centralized firewall
+**Stage 1:** Deploy all infrastructure with AKS using Azure Load Balancer for egress
 
-See **[Deployment Steps](docs/DEPLOYMENT-STEPS.md)** for details.
+**Stage 2:** Switch AKS to use Azure Firewall for egress (user-defined routing)
 
----
+## 🔧 Helper Scripts
 
-## 📊 What Gets Created
-
-When you run `terraform apply` in `environments/canada-central/prod/`:
-
-### Networking (15-18 resources)
-- Hub VNet with 4 subnets
-- Spoke VNet with 3 subnets
-- VNet peering (hub ↔ spoke)
-- 5 Private DNS zones with VNet links
-- 3 NSGs, 1 Route Table
-
-### Security (4 resources)
-- Azure Firewall Premium with policy
-- Azure Bastion
-- 2 Public IPs
-
-### Compute (8-12 resources)
-- AKS cluster with Istio
-- System node pool (2-3 nodes)
-- User node pool (2-5 nodes)
-- 2 VMs (jumpbox, agent)
-
-### Storage (5-7 resources)
-- Storage Account with private endpoints
-- Container Registry with private endpoint
-- Key Vault with private endpoint
-- File Share
-
-### Data (2 resources)
-- PostgreSQL Flexible Server
-- Private endpoint
-
-### Monitoring (3 resources)
-- Log Analytics Workspace
-- Application Insights
-- Action Group
-
-**Total: ~45-50 resources**
-
-See **[Environment Resources](docs/ENVIRONMENT-RESOURCES.md)** for complete details.
-
----
-
-## 🚦 Simplifications Made
-
-This infrastructure was simplified from a complex multi-region setup:
-
-- ✅ **Single Region** - Canada Central only (was 4 regions)
-- ✅ **Single Resource Group** - One RG per environment (was 4)
-- ✅ **Shared AKS Subnet** - One subnet for all node pools (was 2)
-- ✅ **Istio Inbuilt** - AKS feature (was manual installation)
-- ✅ **Removed Scripts** - Deployment via Makefile/Terraform (was shell scripts)
-- ✅ **Simplified Bootstrap** - 6 resources (was 23)
-- ✅ **Cost Reduction** - 71% reduction in bootstrap costs
-
-See **[SIMPLIFICATION-SUMMARY.md](SIMPLIFICATION-SUMMARY.md)** for details.
-
----
+| Script | Purpose |
+|--------|---------|
+| `scripts/check-existing-resources.sh` | Check for resource conflicts before deployment |
+| `scripts/setup-backend.sh` | Configure Terraform backend |
+| `scripts/validate-cidr.py` | Validate CIDR ranges |
+| `scripts/get-aks-credentials.sh` | Get AKS cluster credentials |
+| `scripts/get-istio-lb-ip.sh` | Get Istio ingress gateway IP |
+| `scripts/get-secrets-from-keyvault.sh` | Retrieve secrets from Key Vault |
+| `scripts/validate-deployment.sh` | Validate deployment success |
 
 ## 🤝 Contributing
 
-1. Create feature branch
-2. Make changes
-3. Run validation: `terraform fmt`, `terraform validate`
-4. Create Pull Request
+1. Create a feature branch from `main`
+2. Make your changes
+3. Run validation: `terraform fmt -recursive && terraform validate`
+4. Create a Pull Request
 5. PR validation pipeline runs automatically
 
----
+## 📝 Version Information
 
-## 📝 Version
-
-**Version**: 2.1.0
-**Last Updated**: November 2025
-**Terraform**: >= 1.10.3
-**Azure Provider**: ~> 4.51.0
+- **Version**: 2.1.0
+- **Last Updated**: November 2025
+- **Terraform**: >= 1.10.3
+- **Azure Provider**: ~> 4.51.0

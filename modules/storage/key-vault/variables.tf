@@ -66,13 +66,13 @@ variable "enable_rbac_authorization" {
 variable "purge_protection_enabled" {
   description = "Enable purge protection (cannot be disabled once enabled)"
   type        = bool
-  default     = true
+  default     = false
 }
 
 variable "soft_delete_retention_days" {
   description = "Soft delete retention days (7-90)"
   type        = number
-  default     = 90
+  default     = 7
 
   validation {
     condition     = var.soft_delete_retention_days >= 7 && var.soft_delete_retention_days <= 90
