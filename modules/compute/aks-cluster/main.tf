@@ -95,7 +95,7 @@ resource "azurerm_kubernetes_cluster" "this" {
   # Microsoft Entra ID (Azure AD) Integration with Kubernetes RBAC
   # This enables Microsoft Entra ID authentication with Azure RBAC for Kubernetes authorization
   azure_active_directory_role_based_access_control {
-    azure_rbac_enabled     = true  # Enable Azure RBAC for Kubernetes authorization
+    azure_rbac_enabled     = false  # Enable Azure RBAC for Kubernetes authorization
     tenant_id              = var.tenant_id
     admin_group_object_ids = var.admin_group_object_ids
   }
