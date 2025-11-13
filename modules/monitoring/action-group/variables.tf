@@ -13,7 +13,7 @@ variable "resource_group_name" {
 variable "short_name" {
   description = "Short name (max 12 characters)"
   type        = string
-  
+
   validation {
     condition     = length(var.short_name) <= 12
     error_message = "Short name must be 12 characters or less"

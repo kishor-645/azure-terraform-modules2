@@ -45,14 +45,14 @@ output "private_ip" {
 output "key_vault_details" {
   description = "Consolidated Key Vault details"
   value = {
-    id                      = azurerm_key_vault.this.id
-    name                    = azurerm_key_vault.this.name
-    uri                     = azurerm_key_vault.this.vault_uri
-    sku                     = var.sku_name
-    rbac_enabled            = var.enable_rbac_authorization
-    purge_protection        = var.purge_protection_enabled
-    soft_delete_retention   = var.soft_delete_retention_days
-    has_private_endpoint    = var.enable_private_endpoint
+    id                    = azurerm_key_vault.this.id
+    name                  = azurerm_key_vault.this.name
+    uri                   = azurerm_key_vault.this.vault_uri
+    sku                   = var.sku_name
+    rbac_enabled          = var.enable_rbac_authorization
+    purge_protection      = var.purge_protection_enabled
+    soft_delete_retention = var.soft_delete_retention_days
+    has_private_endpoint  = var.enable_private_endpoint
   }
 }
 
@@ -62,7 +62,7 @@ output "key_vault_details" {
 
 output "usage_instructions" {
   description = "Instructions for using Key Vault with RBAC"
-  value = <<-EOT
+  value       = <<-EOT
     ===================================
     Key Vault Usage with RBAC
     ===================================

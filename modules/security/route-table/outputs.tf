@@ -26,7 +26,7 @@ output "route_table_resource_group_name" {
 
 output "bgp_route_propagation_disabled" {
   description = "Whether BGP route propagation is disabled"
-  value       = null  # disable_bgp_route_propagation not available in current provider
+  value       = null # disable_bgp_route_propagation not available in current provider
 }
 
 # ========================================
@@ -36,7 +36,7 @@ output "bgp_route_propagation_disabled" {
 output "routes" {
   description = "Map of routes in the route table"
   value = {
-    for route in azurerm_route.this : 
+    for route in azurerm_route.this :
     route.name => {
       address_prefix         = route.address_prefix
       next_hop_type          = route.next_hop_type
@@ -76,12 +76,12 @@ output "subnet_association_count" {
 output "route_table_details" {
   description = "Consolidated route table details"
   value = {
-    id                            = azurerm_route_table.this.id
-    name                          = azurerm_route_table.this.name
-    location                      = azurerm_route_table.this.location
-    resource_group_name           = azurerm_route_table.this.resource_group_name
-    bgp_route_propagation_disabled = null  # Not available in current provider
-    route_count                   = length(azurerm_route.this)
-    associated_subnets            = length(azurerm_subnet_route_table_association.this)
+    id                             = azurerm_route_table.this.id
+    name                           = azurerm_route_table.this.name
+    location                       = azurerm_route_table.this.location
+    resource_group_name            = azurerm_route_table.this.resource_group_name
+    bgp_route_propagation_disabled = null # Not available in current provider
+    route_count                    = length(azurerm_route.this)
+    associated_subnets             = length(azurerm_subnet_route_table_association.this)
   }
 }

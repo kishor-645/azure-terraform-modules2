@@ -100,6 +100,6 @@ output "spoke_vnet_details" {
         id             = s.id
         name           = s.name
         address_prefix = s.address_prefixes[0]
-      } }
+    } }
   }
 }

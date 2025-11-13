@@ -3,7 +3,7 @@
 
 terraform {
   required_version = ">= 1.10.3"
-  
+
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
@@ -23,11 +23,11 @@ resource "azurerm_storage_account" "this" {
   account_tier             = "Premium"
   account_replication_type = "LRS"
   account_kind             = "FileStorage"
-  
+
   min_tls_version                 = "TLS1_2"
   allow_nested_items_to_be_public = false
   public_network_access_enabled   = var.public_network_access_enabled
-  
+
   network_rules {
     default_action             = var.default_network_action
     bypass                     = ["AzureServices"]
@@ -51,7 +51,7 @@ resource "azurerm_storage_share" "this" {
   storage_account_name = azurerm_storage_account.this.name
   quota                = var.file_share_quota_gb
   enabled_protocol     = var.enabled_protocol
-  
+
   # Access Tier (for Premium)
   access_tier = var.access_tier
 

@@ -196,49 +196,7 @@ variable "tls_certificate_name" {
   default     = "tls-inspection-cert"
 }
 
-# ========================================
-# Network Rule Variables
-# ========================================
-
-variable "hub_vnet_cidr" {
-  description = "CIDR block of the hub VNet"
-  type        = string
-  default     = "10.0.0.0/16"
-}
-
-variable "spoke_vnet_cidr" {
-  description = "CIDR block of the spoke VNet"
-  type        = string
-  default     = "10.1.0.0/16"
-}
-
-variable "custom_source_addresses" {
-  description = "Custom source addresses for firewall rules"
-  type        = list(string)
-  default     = ["*"]
-}
-
-variable "custom_destination_addresses" {
-  description = "Custom destination addresses for network rules"
-  type        = list(string)
-  default     = []
-}
-
-variable "custom_destination_ports" {
-  description = "Custom destination ports for network rules"
-  type        = list(string)
-  default     = ["443"]
-}
-
-# ========================================
-# Application Rule Variables
-# ========================================
-
-variable "custom_allowed_fqdns" {
-  description = "Custom list of allowed FQDNs"
-  type        = list(string)
-  default     = []
-}
+## Application Rule Variables (none currently)
 
 # ========================================
 # Monitoring

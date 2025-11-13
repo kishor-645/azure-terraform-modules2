@@ -210,13 +210,6 @@ variable "user_node_pool_vm_size" {
   default     = "Standard_F16s_v2"
 }
 
-# Legacy variable - user node pool now uses same subnet as system pool
-variable "user_node_pool_subnet_id" {
-  description = "[DEPRECATED] User node pool now uses aks_node_pool_subnet_id. This variable is ignored."
-  type        = string
-  default     = null
-}
-
 variable "user_node_pool_enable_autoscaling" {
   description = "Enable autoscaling for user node pool"
   type        = bool
@@ -365,28 +358,6 @@ variable "key_vault_secrets_rotation_interval" {
   description = "Rotation interval for Key Vault secrets (e.g., '2m')"
   type        = string
   default     = "2m"
-}
-
-# ========================================
-# Maintenance Window
-# ========================================
-
-variable "maintenance_window_enabled" {
-  description = "Enable maintenance window"
-  type        = bool
-  default     = false
-}
-
-variable "maintenance_window_day" {
-  description = "Day of week for maintenance window"
-  type        = string
-  default     = "Sunday"
-}
-
-variable "maintenance_window_hours" {
-  description = "Hours for maintenance window"
-  type        = list(number)
-  default     = [2, 3, 4]
 }
 
 # ========================================

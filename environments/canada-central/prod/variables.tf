@@ -4,7 +4,7 @@ variable "location" {
   description = "Azure region/location for all resources (e.g., canadacentral, eastus, westus2)"
   type        = string
   default     = "canadacentral"
-  
+
   validation {
     condition     = can(regex("^[a-z0-9]+$", var.location))
     error_message = "Location must be a valid Azure region name (lowercase, no spaces)."
@@ -58,7 +58,7 @@ variable "deployment_stage" {
   description = "Deployment stage (stage1 or stage2)"
   type        = string
   default     = "stage1"
-  
+
   validation {
     condition     = contains(["stage1", "stage2"], var.deployment_stage)
     error_message = "Deployment stage must be stage1 or stage2"
@@ -167,11 +167,11 @@ variable "spoke_vnets" {
     vnet_name      = string
     address_spaces = list(string)
     subnets = map(object({
-      name                                   = optional(string)
-      address_prefixes                        = list(string)
-      service_endpoints                       = optional(list(string), [])
-      private_endpoint_network_policies       = optional(string)
-      private_link_service_network_policies   = optional(string)
+      name                                  = optional(string)
+      address_prefixes                      = list(string)
+      service_endpoints                     = optional(list(string), [])
+      private_endpoint_network_policies     = optional(string)
+      private_link_service_network_policies = optional(string)
       delegations = optional(list(object({
         name = string
         service_delegation = object({
@@ -194,11 +194,11 @@ variable "hub_network" {
     address_spaces          = optional(list(string))
     ddos_protection_plan_id = optional(string)
     subnets = optional(map(object({
-      name                                   = optional(string)
-      address_prefixes                        = list(string)
-      service_endpoints                       = optional(list(string), [])
-      private_endpoint_network_policies       = optional(string)
-      private_link_service_network_policies   = optional(string)
+      name                                  = optional(string)
+      address_prefixes                      = list(string)
+      service_endpoints                     = optional(list(string), [])
+      private_endpoint_network_policies     = optional(string)
+      private_link_service_network_policies = optional(string)
       delegations = optional(list(object({
         name = string
         service_delegation = object({
@@ -217,11 +217,11 @@ variable "default_spoke_network" {
     vnet_name      = optional(string)
     address_spaces = optional(list(string))
     subnets = optional(map(object({
-      name                                   = optional(string)
-      address_prefixes                        = list(string)
-      service_endpoints                       = optional(list(string), [])
-      private_endpoint_network_policies       = optional(string)
-      private_link_service_network_policies   = optional(string)
+      name                                  = optional(string)
+      address_prefixes                      = list(string)
+      service_endpoints                     = optional(list(string), [])
+      private_endpoint_network_policies     = optional(string)
+      private_link_service_network_policies = optional(string)
       delegations = optional(list(object({
         name = string
         service_delegation = object({
@@ -235,46 +235,6 @@ variable "default_spoke_network" {
   default = {}
 }
 
-variable "network_bindings" {
-  description = "Mappings of workloads to spokes/subnets."
-  type = object({
-    aks = optional(object({
-      vnet_key   = string
-      subnet_key = string
-    }))
-    private_endpoints = optional(object({
-      vnet_key   = string
-      subnet_key = string
-    }))
-    jumpbox = optional(object({
-      vnet_key   = string
-      subnet_key = string
-    }))
-  })
-  default = {}
-}
-
-variable "module_toggles" {
-  description = "Feature toggles to include or exclude optional modules."
-  type = object({
-    log_analytics      = optional(bool)
-    hub_vnet           = optional(bool)
-    spoke_vnets        = optional(bool)
-    vnet_peering       = optional(bool)
-    private_dns_zones  = optional(bool)
-    azure_firewall     = optional(bool)
-    route_table_aks    = optional(bool)
-    azure_bastion      = optional(bool)
-    key_vault          = optional(bool)
-    storage_account    = optional(bool)
-    container_registry = optional(bool)
-    postgresql         = optional(bool)
-    aks                = optional(bool)
-    jumpbox            = optional(bool)
-    agent_vm           = optional(bool)
-  })
-  default = {}
-}
 # AKS exposure toggle (private vs public control plane)
 variable "aks_private_cluster_enabled" {
   description = "Enable AKS private cluster. Set false for public API endpoint."

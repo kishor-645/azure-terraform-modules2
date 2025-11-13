@@ -31,14 +31,14 @@ output "nsg_resource_group_name" {
 output "inbound_rules" {
   description = "Map of inbound security rules"
   value = {
-    for rule in azurerm_network_security_rule.inbound : 
+    for rule in azurerm_network_security_rule.inbound :
     rule.name => {
-      priority                = rule.priority
-      access                  = rule.access
-      protocol                = rule.protocol
-      source_port_range       = rule.source_port_range
-      destination_port_range  = rule.destination_port_range
-      source_address_prefix   = rule.source_address_prefix
+      priority                   = rule.priority
+      access                     = rule.access
+      protocol                   = rule.protocol
+      source_port_range          = rule.source_port_range
+      destination_port_range     = rule.destination_port_range
+      source_address_prefix      = rule.source_address_prefix
       destination_address_prefix = rule.destination_address_prefix
     }
   }
@@ -47,14 +47,14 @@ output "inbound_rules" {
 output "outbound_rules" {
   description = "Map of outbound security rules"
   value = {
-    for rule in azurerm_network_security_rule.outbound : 
+    for rule in azurerm_network_security_rule.outbound :
     rule.name => {
-      priority                = rule.priority
-      access                  = rule.access
-      protocol                = rule.protocol
-      source_port_range       = rule.source_port_range
-      destination_port_range  = rule.destination_port_range
-      source_address_prefix   = rule.source_address_prefix
+      priority                   = rule.priority
+      access                     = rule.access
+      protocol                   = rule.protocol
+      source_port_range          = rule.source_port_range
+      destination_port_range     = rule.destination_port_range
+      source_address_prefix      = rule.source_address_prefix
       destination_address_prefix = rule.destination_address_prefix
     }
   }
@@ -91,12 +91,12 @@ output "subnet_association_count" {
 output "nsg_details" {
   description = "Consolidated NSG details"
   value = {
-    id                   = azurerm_network_security_group.this.id
-    name                 = azurerm_network_security_group.this.name
-    location             = azurerm_network_security_group.this.location
-    resource_group_name  = azurerm_network_security_group.this.resource_group_name
-    inbound_rule_count   = length(azurerm_network_security_rule.inbound)
-    outbound_rule_count  = length(azurerm_network_security_rule.outbound)
-    associated_subnets   = length(var.subnet_ids)
+    id                  = azurerm_network_security_group.this.id
+    name                = azurerm_network_security_group.this.name
+    location            = azurerm_network_security_group.this.location
+    resource_group_name = azurerm_network_security_group.this.resource_group_name
+    inbound_rule_count  = length(azurerm_network_security_rule.inbound)
+    outbound_rule_count = length(azurerm_network_security_rule.outbound)
+    associated_subnets  = length(var.subnet_ids)
   }
 }

@@ -3,7 +3,7 @@
 
 terraform {
   required_version = ">= 1.10.3"
-  
+
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
@@ -17,7 +17,7 @@ resource "azurerm_monitor_action_group" "this" {
   resource_group_name = var.resource_group_name
   short_name          = var.short_name
   enabled             = var.enabled
-  
+
   dynamic "email_receiver" {
     for_each = var.email_receivers
     content {
@@ -26,7 +26,7 @@ resource "azurerm_monitor_action_group" "this" {
       use_common_alert_schema = email_receiver.value.use_common_alert_schema
     }
   }
-  
+
   dynamic "sms_receiver" {
     for_each = var.sms_receivers
     content {
@@ -35,7 +35,7 @@ resource "azurerm_monitor_action_group" "this" {
       phone_number = sms_receiver.value.phone_number
     }
   }
-  
+
   dynamic "webhook_receiver" {
     for_each = var.webhook_receivers
     content {
@@ -44,7 +44,7 @@ resource "azurerm_monitor_action_group" "this" {
       use_common_alert_schema = webhook_receiver.value.use_common_alert_schema
     }
   }
-  
+
   dynamic "azure_function_receiver" {
     for_each = var.azure_function_receivers
     content {
@@ -55,7 +55,7 @@ resource "azurerm_monitor_action_group" "this" {
       use_common_alert_schema  = azure_function_receiver.value.use_common_alert_schema
     }
   }
-  
+
   tags = merge(
     var.tags,
     {

@@ -3,7 +3,7 @@
 
 terraform {
   required_version = ">= 1.10.3"
-  
+
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
@@ -16,29 +16,29 @@ resource "azurerm_postgresql_flexible_server" "this" {
   name                = var.server_name
   resource_group_name = var.resource_group_name
   location            = var.location
-  
-  version                      = var.postgresql_version
-  administrator_login          = var.administrator_login
-  administrator_password       = var.administrator_password
-  sku_name                     = var.sku_name
-  storage_mb                   = var.storage_mb
-  storage_tier                 = var.storage_tier
-  
+
+  version                = var.postgresql_version
+  administrator_login    = var.administrator_login
+  administrator_password = var.administrator_password
+  sku_name               = var.sku_name
+  storage_mb             = var.storage_mb
+  storage_tier           = var.storage_tier
+
   backup_retention_days        = var.backup_retention_days
   geo_redundant_backup_enabled = var.geo_redundant_backup_enabled
-  
+
   high_availability {
     mode                      = var.high_availability_enabled ? "ZoneRedundant" : "Disabled"
     standby_availability_zone = var.high_availability_enabled ? var.standby_availability_zone : null
   }
-  
+
   delegated_subnet_id = var.delegated_subnet_id
   private_dns_zone_id = var.private_dns_zone_id
-  
+
   public_network_access_enabled = false
-  
+
   zone = var.availability_zone
-  
+
   tags = merge(
     var.tags,
     {
@@ -73,7 +73,7 @@ resource "azurerm_postgresql_flexible_server_configuration" "maintenance_work_me
 
 resource "azurerm_postgresql_flexible_server_database" "databases" {
   for_each = toset(var.databases)
-  
+
   name      = each.value
   server_id = azurerm_postgresql_flexible_server.this.id
   charset   = "UTF8"
@@ -85,11 +85,11 @@ resource "azurerm_monitor_diagnostic_setting" "postgresql" {
   name                       = "diag-${var.server_name}"
   target_resource_id         = azurerm_postgresql_flexible_server.this.id
   log_analytics_workspace_id = var.log_analytics_workspace_id
-  
+
   enabled_log {
     category = "PostgreSQLLogs"
   }
-  
+
   enabled_metric {
     category = "AllMetrics"
   }

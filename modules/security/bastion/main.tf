@@ -3,7 +3,7 @@
 
 terraform {
   required_version = ">= 1.10.3"
-  
+
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
@@ -41,7 +41,7 @@ resource "azurerm_bastion_host" "this" {
   location            = var.location
   resource_group_name = var.resource_group_name
   sku                 = var.bastion_sku
-  
+
   # Standard SKU Features
   copy_paste_enabled     = var.copy_paste_enabled
   file_copy_enabled      = var.file_copy_enabled

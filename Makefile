@@ -26,12 +26,25 @@ help: ## Display this help message
 
 install-tools: ## Install required tools (terraform, tflint, checkov, pre-commit)
 	@echo "$(GREEN)Installing required tools...$(NC)"
-	@command -v terraform >/dev/null 2>&1 || { echo "Installing Terraform..."; brew install terraform; }
-	@command -v tflint >/dev/null 2>&1 || { echo "Installing TFLint..."; brew install tflint; }
-	@command -v checkov >/dev/null 2>&1 || { echo "Installing Checkov..."; pip3 install checkov; }
-	@command -v pre-commit >/dev/null 2>&1 || { echo "Installing Pre-commit..."; pip3 install pre-commit; }
-	@command -v az >/dev/null 2>&1 || { echo "Installing Azure CLI..."; brew install azure-cli; }
-	@echo "$(GREEN)✓ All tools installed!$(NC)"
+	@command -v terraform >/dev/null 2>&1 || { \
+		echo "Terraform not found. Attempting to install via known package manager..."; \
+		if command -v brew >/dev/null 2>&1; then echo "Installing Terraform via brew..." && brew install terraform; \
+		elif command -v apt-get >/dev/null 2>&1; then echo "Installing Terraform via apt-get..." && sudo apt-get update && sudo apt-get install -y terraform || echo "Please follow https://www.terraform.io/downloads.html to install Terraform."; \
+		else echo "Please install terraform from https://www.terraform.io/downloads.html"; fi; \
+	}
+	@command -v tflint >/dev/null 2>&1 || { \
+		if command -v brew >/dev/null 2>&1; then echo "Installing TFLint via brew..." && brew install tflint; \
+		elif command -v apt-get >/dev/null 2>&1; then echo "Installing TFLint via apt-get..." && sudo apt-get update && sudo apt-get install -y tflint || echo "Please install tflint from https://github.com/terraform-linters/tflint"; \
+		else echo "Please install tflint from https://github.com/terraform-linters/tflint"; fi; \
+	}
+	@command -v checkov >/dev/null 2>&1 || { echo "Installing Checkov..." && pip3 install checkov; }
+	@command -v pre-commit >/dev/null 2>&1 || { echo "Installing Pre-commit..." && pip3 install pre-commit; }
+	@command -v az >/dev/null 2>&1 || { \
+		if command -v brew >/dev/null 2>&1; then echo "Installing Azure CLI via brew..." && brew install azure-cli; \
+		elif command -v apt-get >/dev/null 2>&1; then echo "Installing Azure CLI via apt-get..." && curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash || echo "Please install Azure CLI from https://learn.microsoft.com/cli/azure/install-azure-cli"; \
+		else echo "Please install Azure CLI from https://learn.microsoft.com/cli/azure/install-azure-cli"; fi; \
+	}
+	@echo "$(GREEN)✓ All tools installed (or please follow printed instructions).$(NC)"
 
 setup-hooks: ## Setup git pre-commit hooks
 	@echo "$(GREEN)Setting up pre-commit hooks...$(NC)"
@@ -59,7 +72,8 @@ format: ## Format Terraform files
 lint: ## Run TFLint
 	@echo "$(GREEN)Running TFLint...$(NC)"
 	@tflint --init
-	@find . -type f -name "*.tf" -not -path "*/.terraform/*" | xargs dirname | sort -u | xargs -I {} tflint {}
+	@find . -type f -name "*.tf" -not -path "*/.terraform/*" | xargs dirname | sort -u | \
+		xargs -I {} sh -c 'echo "== Linting: {} =="; tflint --chdir "{}" || exit 1'
 	@echo "$(GREEN)✓ Linting complete!$(NC)"
 
 security: ## Run Checkov security scan

@@ -21,7 +21,7 @@ resource "azurerm_firewall_policy_rule_collection_group" "network" {
 
     # Azure Services from AKS
     rule {
-      name = "Azure-Services"
+      name      = "Azure-Services"
       protocols = ["TCP"]
 
       source_addresses = ["10.1.16.0/22"]
@@ -41,12 +41,12 @@ resource "azurerm_firewall_policy_rule_collection_group" "network" {
 
     # DNS/NTP from Hub and Spoke
     rule {
-      name = "DNS-NTP"
+      name      = "DNS-NTP"
       protocols = ["TCP", "UDP"]
 
       source_addresses = [
-        "10.0.0.0/16",  # Hub VNet
-        "10.1.0.0/16"   # Spoke VNet
+        "10.0.0.0/16", # Hub VNet
+        "10.1.0.0/16"  # Spoke VNet
       ]
 
       destination_addresses = ["*"]
@@ -64,7 +64,7 @@ resource "azurerm_firewall_policy_rule_collection_group" "network" {
 
     # NTP from AKS
     rule {
-      name = "NTP"
+      name      = "NTP"
       protocols = ["UDP"]
 
       source_addresses = ["10.1.16.0/22"]
@@ -84,12 +84,12 @@ resource "azurerm_firewall_policy_rule_collection_group" "network" {
 
     # PostgreSQL from AKS
     rule {
-      name = "Postgresql"
+      name      = "Postgresql"
       protocols = ["TCP"]
 
       source_addresses = ["10.1.16.0/22"]
 
-      destination_addresses = ["10.1.29.0/24"]  # Private endpoints subnet
+      destination_addresses = ["10.1.29.0/24"] # Private endpoints subnet
       destination_ports     = ["5432"]
     }
   }
@@ -104,12 +104,12 @@ resource "azurerm_firewall_policy_rule_collection_group" "network" {
 
     # Jumpbox Internet Access
     rule {
-      name = "Jumpbox-Internet"
+      name      = "Jumpbox-Internet"
       protocols = ["TCP"]
 
       source_addresses = [
-        "10.0.4.0/24",      # Hub shared services subnet
-        "10.1.30.128/27"    # Spoke jumpbox subnet
+        "10.0.4.0/24",   # Hub shared services subnet
+        "10.1.30.128/27" # Spoke jumpbox subnet
       ]
 
       destination_addresses = ["*"]

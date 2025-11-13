@@ -4,7 +4,7 @@
 
 terraform {
   required_version = ">= 1.10.3"
-  
+
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
@@ -32,7 +32,7 @@ resource "azurerm_kubernetes_cluster" "this" {
   resource_group_name = var.resource_group_name
   dns_prefix          = var.dns_prefix
   kubernetes_version  = var.kubernetes_version
-  
+
   # Private Cluster Configuration
   private_cluster_enabled             = var.private_cluster_enabled
   private_dns_zone_id                 = var.private_dns_zone_id
@@ -50,14 +50,14 @@ resource "azurerm_kubernetes_cluster" "this" {
     vnet_subnet_id = local.node_pool_subnet_id
     # Autoscaling is enabled when min_count and max_count are set
     # If autoscaling is disabled, only node_count is set
-    min_count  = var.system_node_pool_enable_autoscaling ? var.system_node_pool_min_count : null
-    max_count  = var.system_node_pool_enable_autoscaling ? var.system_node_pool_max_count : null
-    node_count = var.system_node_pool_enable_autoscaling ? null : var.system_node_pool_count
-    max_pods            = var.system_node_pool_max_pods
-    os_disk_size_gb     = var.system_node_pool_os_disk_size_gb
-    os_disk_type        = var.system_node_pool_os_disk_type
-    zones               = var.system_node_pool_availability_zones
-    
+    min_count       = var.system_node_pool_enable_autoscaling ? var.system_node_pool_min_count : null
+    max_count       = var.system_node_pool_enable_autoscaling ? var.system_node_pool_max_count : null
+    node_count      = var.system_node_pool_enable_autoscaling ? null : var.system_node_pool_count
+    max_pods        = var.system_node_pool_max_pods
+    os_disk_size_gb = var.system_node_pool_os_disk_size_gb
+    os_disk_type    = var.system_node_pool_os_disk_type
+    zones           = var.system_node_pool_availability_zones
+
     upgrade_settings {
       max_surge = var.system_node_pool_max_surge
     }
@@ -65,8 +65,8 @@ resource "azurerm_kubernetes_cluster" "this" {
     tags = merge(
       var.tags,
       {
-        NodePoolType = "System"
-        SubnetShared = "true"  # Indicator that subnet is shared with user pool
+        NodePoolType = "Systemses"
+        SubnetShared = "true" # Indicator that subnet is shared with user pool
       }
     )
   }
@@ -84,10 +84,10 @@ resource "azurerm_kubernetes_cluster" "this" {
     network_policy      = "calico"
     outbound_type       = var.outbound_type
     load_balancer_sku   = "standard"
-    
+
     service_cidr   = var.service_cidr
     dns_service_ip = var.dns_service_ip
-    
+
     # Pod CIDR for Overlay mode
     pod_cidr = var.pod_cidr
   }
@@ -95,7 +95,7 @@ resource "azurerm_kubernetes_cluster" "this" {
   # Microsoft Entra ID (Azure AD) Integration with Kubernetes RBAC
   # This enables Microsoft Entra ID authentication with Azure RBAC for Kubernetes authorization
   azure_active_directory_role_based_access_control {
-    azure_rbac_enabled     = false  # Enable Azure RBAC for Kubernetes authorization
+    azure_rbac_enabled     = var.azure_rbac_enabled
     tenant_id              = var.tenant_id
     admin_group_object_ids = var.admin_group_object_ids
   }

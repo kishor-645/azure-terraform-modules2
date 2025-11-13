@@ -30,7 +30,7 @@ storage_account_name    = "sterpccprod"
 # ========================================
 # Deployment Configuration
 # ========================================
-deployment_stage = "stage1"  # Options: stage1, stage2
+deployment_stage = "stage1" # Options: stage1, stage2
 
 # ========================================
 # Kubernetes Configuration
@@ -54,8 +54,8 @@ user_node_pool_max_count = 5
 # ========================================
 # Azure Firewall Configuration
 # ========================================
-firewall_threat_intel_mode = "Deny"  # Options: Off, Alert, Deny
-firewall_idps_mode         = "Deny"  # Options: Off, Alert, Deny
+firewall_threat_intel_mode = "Deny" # Options: Off, Alert, Deny
+firewall_idps_mode         = "Deny" # Options: Off, Alert, Deny
 
 # ========================================
 # Istio Configuration
@@ -68,23 +68,23 @@ istio_internal_lb_ip = ""
 # ========================================
 jumpbox_vm_size        = "Standard_B2s"
 jumpbox_admin_username = "azureuser"
-jumpbox_admin_password = "ChangeMe123!@#"  # Use Azure Key Vault or secure variable
+jumpbox_admin_password = "ChangeMe123!@#" # Use Azure Key Vault or secure variable
 
 # ========================================
 # Agent VM Configuration
 # ========================================
-agent_vm_size        = "Standard_B2s"
+agent_vm_size           = "Standard_B2s"
 agent_vm_admin_username = "azureuser"
-agent_vm_admin_password = "ChangeMe123!@#"  # Use Azure Key Vault or secure variable
+agent_vm_admin_password = "ChangeMe123!@#" # Use Azure Key Vault or secure variable
 
 # ========================================
 # PostgreSQL Configuration
 # ========================================
-postgresql_version            = "17"
-postgresql_admin_login        = "master"
-postgresql_admin_password     = "ChangeMe123!@#"  # Use Azure Key Vault or secure variable
-postgresql_sku_name          = "GP_Standard_D4s_v3"
-postgresql_storage_mb         = 131072  # 128 GB
+postgresql_version               = "17"
+postgresql_admin_login           = "master"
+postgresql_admin_password        = "ChangeMe123!@#" # Use Azure Key Vault or secure variable
+postgresql_sku_name              = "GP_Standard_D4s_v3"
+postgresql_storage_mb            = 131072 # 128 GB
 postgresql_backup_retention_days = 7
 
 # ========================================
@@ -96,7 +96,7 @@ log_analytics_retention_days = 30
 # Additional Tags
 # ========================================
 additional_tags = {
-  Owner       = "DevOps Team"
-  CostCenter  = "IT-Operations"
-  Project     = "ERP-Infrastructure"
+  Owner      = "DevOps Team"
+  CostCenter = "IT-Operations"
+  Project    = "ERP-Infrastructure"
 }

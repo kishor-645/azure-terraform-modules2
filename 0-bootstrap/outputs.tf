@@ -59,7 +59,7 @@ output "ddos_protection_plan_id" {
 
 output "backend_config_dev" {
   description = "Example backend configuration for Dev environment"
-  value = <<-EOT
+  value       = <<-EOT
     # Add to environments/canada-central/dev/backend.tf:
 
     terraform {
@@ -75,7 +75,7 @@ output "backend_config_dev" {
 
 output "backend_config_prod" {
   description = "Example backend configuration for Prod environment"
-  value = <<-EOT
+  value       = <<-EOT
     # Add to environments/canada-central/prod/backend.tf:
 
     terraform {
@@ -95,7 +95,7 @@ output "backend_config_prod" {
 
 output "bootstrap_summary" {
   description = "Summary of bootstrap infrastructure"
-  value = <<-EOT
+  value       = <<-EOT
     ====================================
     Bootstrap Infrastructure Summary
     ====================================

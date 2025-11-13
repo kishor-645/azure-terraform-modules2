@@ -46,7 +46,7 @@ variable "inbound_rules" {
 
   validation {
     condition = alltrue([
-      for rule in var.inbound_rules : 
+      for rule in var.inbound_rules :
       contains(["Allow", "Deny"], rule.access)
     ])
     error_message = "Access must be either 'Allow' or 'Deny'."
@@ -54,7 +54,7 @@ variable "inbound_rules" {
 
   validation {
     condition = alltrue([
-      for rule in var.inbound_rules : 
+      for rule in var.inbound_rules :
       contains(["Tcp", "Udp", "Icmp", "Esp", "Ah", "*"], rule.protocol)
     ])
     error_message = "Protocol must be one of: Tcp, Udp, Icmp, Esp, Ah, *"
@@ -62,7 +62,7 @@ variable "inbound_rules" {
 
   validation {
     condition = alltrue([
-      for rule in var.inbound_rules : 
+      for rule in var.inbound_rules :
       rule.priority >= 100 && rule.priority <= 4096
     ])
     error_message = "Priority must be between 100 and 4096."
@@ -92,7 +92,7 @@ variable "outbound_rules" {
 
   validation {
     condition = alltrue([
-      for rule in var.outbound_rules : 
+      for rule in var.outbound_rules :
       contains(["Allow", "Deny"], rule.access)
     ])
     error_message = "Access must be either 'Allow' or 'Deny'."
@@ -100,7 +100,7 @@ variable "outbound_rules" {
 
   validation {
     condition = alltrue([
-      for rule in var.outbound_rules : 
+      for rule in var.outbound_rules :
       contains(["Tcp", "Udp", "Icmp", "Esp", "Ah", "*"], rule.protocol)
     ])
     error_message = "Protocol must be one of: Tcp, Udp, Icmp, Esp, Ah, *"
@@ -108,7 +108,7 @@ variable "outbound_rules" {
 
   validation {
     condition = alltrue([
-      for rule in var.outbound_rules : 
+      for rule in var.outbound_rules :
       rule.priority >= 100 && rule.priority <= 4096
     ])
     error_message = "Priority must be between 100 and 4096."

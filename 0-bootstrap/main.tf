@@ -32,16 +32,16 @@ provider "azurerm" {
 
 # Local variables
 locals {
-  region           = "canadacentral"
-  region_display   = "Canada Central"
-  region_abbr      = "cc"
+  region         = "canadacentral"
+  region_display = "Canada Central"
+  region_abbr    = "cc"
 
   common_tags = {
-    Environment  = "Shared"
-    ManagedBy    = "Terraform"
-    Project      = "ERP-Infrastructure"
-    Purpose      = "Bootstrap"
-    CreatedDate  = timestamp()
+    Environment = "Shared"
+    ManagedBy   = "Terraform"
+    Project     = "ERP-Infrastructure"
+    Purpose     = "Bootstrap"
+    CreatedDate = timestamp()
   }
 }
 
@@ -83,7 +83,7 @@ resource "azurerm_storage_account" "tfstate" {
   resource_group_name      = azurerm_resource_group.terraform_state.name
   location                 = azurerm_resource_group.terraform_state.location
   account_tier             = "Standard"
-  account_replication_type = "GRS"  # Geo-redundant for disaster recovery
+  account_replication_type = "GRS" # Geo-redundant for disaster recovery
   account_kind             = "StorageV2"
 
   # Security settings
@@ -114,8 +114,8 @@ resource "azurerm_storage_account" "tfstate" {
 
 # Storage container for Terraform state files
 resource "azurerm_storage_container" "tfstate" {
-  name                 = "tfstate"
-  storage_account_id   = azurerm_storage_account.tfstate.id
+  name               = "tfstate"
+  storage_account_id = azurerm_storage_account.tfstate.id
 }
 
 # ========================================

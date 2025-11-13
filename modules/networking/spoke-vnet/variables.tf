@@ -60,15 +60,6 @@ variable "private_endpoints_subnet_cidr" {
   }
 }
 
-variable "jumpbox_subnet_cidr" {
-  description = "CIDR block for jumpbox/agent VM subnet (recommend /27 for 32 IPs)"
-  type        = string
-
-  validation {
-    condition     = can(cidrhost(var.jumpbox_subnet_cidr, 0))
-    error_message = "The jumpbox_subnet_cidr must be a valid CIDR block."
-  }
-}
 
 # ========================================
 # Optional Variables
@@ -86,22 +77,16 @@ variable "private_endpoints_subnet_name" {
   default     = "PrivateEndpointsSubnet"
 }
 
-variable "jumpbox_subnet_name" {
-  description = "Name for the jumpbox subnet"
-  type        = string
-  default     = "JumpboxSubnet"
-}
-
 # New: fully dynamic subnets map (preferred)
 # Keys are logical subnet identifiers; values define Azure subnet arguments.
 variable "subnets" {
   description = "Map of subnets to create. If provided, the legacy fixed subnet variables are ignored."
   type = map(object({
-    name                                   = optional(string)                      # defaults to key if omitted
-    address_prefixes                        = list(string)
-    service_endpoints                       = optional(list(string), [])
-    private_endpoint_network_policies       = optional(string)                      # 'Enabled' or 'Disabled'
-    private_link_service_network_policies   = optional(string)                      # 'Enabled' or 'Disabled'
+    name                                  = optional(string) # defaults to key if omitted
+    address_prefixes                      = list(string)
+    service_endpoints                     = optional(list(string), [])
+    private_endpoint_network_policies     = optional(string) # 'Enabled' or 'Disabled'
+    private_link_service_network_policies = optional(string) # 'Enabled' or 'Disabled'
     delegations = optional(list(object({
       name = string
       service_delegation = object({

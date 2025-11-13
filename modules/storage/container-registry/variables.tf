@@ -51,24 +51,6 @@ variable "public_network_access_enabled" {
   default     = false
 }
 
-variable "default_network_action" {
-  description = "Default network action (Allow or Deny)"
-  type        = string
-  default     = "Deny"
-}
-
-variable "allowed_ip_ranges" {
-  description = "Allowed IP ranges"
-  type        = list(string)
-  default     = []
-}
-
-variable "allowed_subnet_ids" {
-  description = "Allowed subnet IDs"
-  type        = list(string)
-  default     = []
-}
-
 # ========================================
 # Geo-replication Configuration
 # ========================================
@@ -88,42 +70,12 @@ variable "georeplications" {
 # Policies
 # ========================================
 
-variable "retention_policy_enabled" {
-  description = "Enable retention policy (Premium only)"
-  type        = bool
-  default     = false
-}
-
-variable "retention_policy_days" {
-  description = "Retention policy days"
-  type        = number
-  default     = 7
-}
-
-variable "trust_policy_enabled" {
-  description = "Enable trust policy (Premium only)"
-  type        = bool
-  default     = false
-}
-
 # ========================================
 # Encryption Configuration
 # ========================================
 
-variable "encryption_key_vault_key_id" {
-  description = "Key Vault key ID for customer-managed encryption"
-  type        = string
-  default     = null
-}
-
 variable "encryption_identity_id" {
   description = "User-assigned identity ID for encryption"
-  type        = string
-  default     = null
-}
-
-variable "encryption_identity_client_id" {
-  description = "Client ID of encryption identity"
   type        = string
   default     = null
 }

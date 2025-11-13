@@ -3,7 +3,7 @@
 
 terraform {
   required_version = ">= 1.10.3"
-  
+
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
@@ -41,7 +41,7 @@ resource "azurerm_linux_virtual_machine" "this" {
   resource_group_name = var.resource_group_name
   size                = var.vm_size
   admin_username      = var.admin_username
-  
+
   network_interface_ids = [
     azurerm_network_interface.this.id
   ]

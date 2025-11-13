@@ -23,7 +23,7 @@ resource "azurerm_firewall_policy_rule_collection_group" "application" {
     rule {
       name = "AKS-API"
 
-      source_addresses = ["10.1.16.0/22"]  # AKS node subnet
+      source_addresses = ["10.1.16.0/22"] # AKS node subnet
 
       destination_fqdns = [
         "*.hcp.canadacentral.azmk8s.io",

@@ -35,7 +35,7 @@ resource "azurerm_role_assignment" "aks_acr_pull" {
   scope                = var.acr_id
   role_definition_name = "AcrPull"
   principal_id         = azurerm_kubernetes_cluster.this.kubelet_identity[0].object_id
-  
+
   # Explicitly depend on the cluster to ensure it's created first
   depends_on = [
     azurerm_kubernetes_cluster.this
@@ -50,7 +50,7 @@ resource "azurerm_role_assignment" "aks_key_vault_secrets_user" {
   scope                = var.key_vault_id
   role_definition_name = "Key Vault Secrets User"
   principal_id         = azurerm_kubernetes_cluster.this.key_vault_secrets_provider[0].secret_identity[0].object_id
-  
+
   # Explicitly depend on the cluster to ensure it's created first
   depends_on = [
     azurerm_kubernetes_cluster.this

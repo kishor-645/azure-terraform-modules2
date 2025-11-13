@@ -50,14 +50,14 @@ output "nic_name" {
 output "vm_details" {
   description = "Consolidated VM details"
   value = {
-    id                 = azurerm_linux_virtual_machine.this.id
-    name               = azurerm_linux_virtual_machine.this.name
-    private_ip         = azurerm_network_interface.this.private_ip_address
-    size               = azurerm_linux_virtual_machine.this.size
-    admin_username     = azurerm_linux_virtual_machine.this.admin_username
-    identity_principal_id = azurerm_linux_virtual_machine.this.identity[0].principal_id
+    id                     = azurerm_linux_virtual_machine.this.id
+    name                   = azurerm_linux_virtual_machine.this.name
+    private_ip             = azurerm_network_interface.this.private_ip_address
+    size                   = azurerm_linux_virtual_machine.this.size
+    admin_username         = azurerm_linux_virtual_machine.this.admin_username
+    identity_principal_id  = azurerm_linux_virtual_machine.this.identity[0].principal_id
     azure_ad_login_enabled = var.enable_azure_ad_login
-    monitoring_enabled = var.enable_monitoring
+    monitoring_enabled     = var.enable_monitoring
   }
 }
 

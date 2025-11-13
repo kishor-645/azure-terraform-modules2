@@ -47,7 +47,7 @@ resource "azurerm_firewall_policy_rule_collection_group" "dnat" {
 
     # HTTP Rule
     rule {
-      name = "allow-http-from-cloudflare"
+      name      = "allow-http-from-cloudflare"
       protocols = ["TCP"]
 
       source_addresses = local.cloudflare_all_ips
@@ -61,7 +61,7 @@ resource "azurerm_firewall_policy_rule_collection_group" "dnat" {
 
     # HTTPS Rule
     rule {
-      name = "allow-https-from-cloudflare"
+      name      = "allow-https-from-cloudflare"
       protocols = ["TCP"]
 
       source_addresses = local.cloudflare_all_ips

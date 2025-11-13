@@ -83,15 +83,6 @@ variable "private_endpoints_subnet_cidr" {
   }
 }
 
-variable "jumpbox_subnet_cidr" {
-  description = "CIDR block for jumpbox subnet"
-  type        = string
-
-  validation {
-    condition     = can(cidrhost(var.jumpbox_subnet_cidr, 0))
-    error_message = "The jumpbox_subnet_cidr must be a valid CIDR block."
-  }
-}
 
 # ========================================
 # Optional Variables
@@ -107,12 +98,6 @@ variable "private_endpoints_subnet_name" {
   description = "Name for the private endpoints subnet"
   type        = string
   default     = "PrivateEndpointsSubnet"
-}
-
-variable "jumpbox_subnet_name" {
-  description = "Name for the jumpbox subnet"
-  type        = string
-  default     = "JumpboxSubnet"
 }
 
 variable "ddos_protection_plan_id" {

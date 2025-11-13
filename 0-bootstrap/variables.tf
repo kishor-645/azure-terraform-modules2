@@ -12,10 +12,3 @@ variable "enable_ddos_protection" {
   type        = bool
   default     = false
 }
-
-# Optional: Custom tags
-variable "additional_tags" {
-  description = "Additional tags to apply to all bootstrap resources"
-  type        = map(string)
-  default     = {}
-}

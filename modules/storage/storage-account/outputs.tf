@@ -67,13 +67,13 @@ output "file_private_endpoint_id" {
 output "storage_account_details" {
   description = "Consolidated storage account details"
   value = {
-    id                     = azurerm_storage_account.this.id
-    name                   = azurerm_storage_account.this.name
-    primary_blob_endpoint  = azurerm_storage_account.this.primary_blob_endpoint
-    primary_file_endpoint  = azurerm_storage_account.this.primary_file_endpoint
-    primary_dfs_endpoint   = azurerm_storage_account.this.primary_dfs_endpoint
-    is_hns_enabled         = var.enable_hierarchical_namespace
-    has_private_endpoint   = var.enable_private_endpoint
-    replication_type       = var.account_replication_type
+    id                    = azurerm_storage_account.this.id
+    name                  = azurerm_storage_account.this.name
+    primary_blob_endpoint = azurerm_storage_account.this.primary_blob_endpoint
+    primary_file_endpoint = azurerm_storage_account.this.primary_file_endpoint
+    primary_dfs_endpoint  = azurerm_storage_account.this.primary_dfs_endpoint
+    is_hns_enabled        = var.enable_hierarchical_namespace
+    has_private_endpoint  = var.enable_private_endpoint
+    replication_type      = var.account_replication_type
   }
 }

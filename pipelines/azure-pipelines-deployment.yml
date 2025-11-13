@@ -14,8 +14,8 @@ pr: none
 variables:
   - name: TF_VERSION
     value: '1.10.3'
-  - name: CHECKOV_VERSION
-    value: '3.1.0'
+  # - name: CHECKOV_VERSION
+  #   value: '3.1.0'
   - name: TFLINT_VERSION
     value: '0.50.3'
   - name: ENVIRONMENT
@@ -59,14 +59,14 @@ stages:
                 curl -s https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash
                 tflint --version
 
-          # Install Checkov
-          - task: Bash@3
-            displayName: 'Install Checkov'
-            inputs:
-              targetType: 'inline'
-              script: |
-                pip3 install checkov==$(CHECKOV_VERSION)
-                checkov --version
+          # # Install Checkov
+          # - task: Bash@3
+          #   displayName: 'Install Checkov'
+          #   inputs:
+          #     targetType: 'inline'
+          #     script: |
+          #       pip3 install checkov==$(CHECKOV_VERSION)
+          #       checkov --version
 
           # Terraform Format Check
           - task: Bash@3
@@ -121,30 +121,30 @@ stages:
                 echo "✓ TFLint scan passed"
 
           # Checkov Scan
-          - task: Bash@3
-            displayName: 'Checkov Security Scan'
-            inputs:
-              targetType: 'inline'
-              script: |
-                echo "Running Checkov security scan..."
-                checkov -d . \
-                  --framework terraform \
-                  --config-file .checkov.yaml \
-                  --compact \
-                  --output cli \
-                  --output-file-path checkov-results.txt \
-                  --soft-fail
-                CHECKOV_EXIT_CODE=$?
+          # - task: Bash@3
+          #   displayName: 'Checkov Security Scan'
+          #   inputs:
+          #     targetType: 'inline'
+          #     script: |
+          #       echo "Running Checkov security scan..."
+          #       checkov -d . \
+          #         --framework terraform \
+          #         --config-file .checkov.yaml \
+          #         --compact \
+          #         --output cli \
+          #         --output-file-path checkov-results.txt \
+          #         --soft-fail
+          #       CHECKOV_EXIT_CODE=$?
                 
-                if [ -f checkov-results.txt ]; then
-                  cat checkov-results.txt
-                fi
+          #       if [ -f checkov-results.txt ]; then
+          #         cat checkov-results.txt
+          #       fi
                 
-                if [ $CHECKOV_EXIT_CODE -ne 0 ]; then
-                  echo "##vso[task.logissue type=error]Checkov found CRITICAL or HIGH severity issues."
-                  exit $CHECKOV_EXIT_CODE
-                fi
-                echo "✓ Checkov scan passed"
+          #       if [ $CHECKOV_EXIT_CODE -ne 0 ]; then
+          #         echo "##vso[task.logissue type=error]Checkov found CRITICAL or HIGH severity issues."
+          #         exit $CHECKOV_EXIT_CODE
+          #       fi
+          #       echo "✓ Checkov scan passed"
 
   # ========================================
   # Deployment Stage

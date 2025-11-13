@@ -27,18 +27,18 @@ locals {
 # ========================================
 
 resource "azurerm_virtual_network_peering" "hub_to_spoke" {
-  name                         = local.hub_to_spoke_name
-  resource_group_name          = var.hub_resource_group_name
-  virtual_network_name         = var.hub_vnet_name
-  remote_virtual_network_id    = var.spoke_vnet_id
+  name                      = local.hub_to_spoke_name
+  resource_group_name       = var.hub_resource_group_name
+  virtual_network_name      = var.hub_vnet_name
+  remote_virtual_network_id = var.spoke_vnet_id
 
   # Traffic settings
   allow_virtual_network_access = true
   allow_forwarded_traffic      = true
 
   # Gateway transit disabled - not using VPN Gateway
-  allow_gateway_transit        = false
-  use_remote_gateways          = false
+  allow_gateway_transit = false
+  use_remote_gateways   = false
 }
 
 # ========================================
@@ -46,18 +46,18 @@ resource "azurerm_virtual_network_peering" "hub_to_spoke" {
 # ========================================
 
 resource "azurerm_virtual_network_peering" "spoke_to_hub" {
-  name                         = local.spoke_to_hub_name
-  resource_group_name          = var.spoke_resource_group_name
-  virtual_network_name         = var.spoke_vnet_name
-  remote_virtual_network_id    = var.hub_vnet_id
+  name                      = local.spoke_to_hub_name
+  resource_group_name       = var.spoke_resource_group_name
+  virtual_network_name      = var.spoke_vnet_name
+  remote_virtual_network_id = var.hub_vnet_id
 
   # Traffic settings
   allow_virtual_network_access = true
   allow_forwarded_traffic      = true
 
   # Gateway transit disabled - not using VPN Gateway
-  allow_gateway_transit        = false
-  use_remote_gateways          = false
+  allow_gateway_transit = false
+  use_remote_gateways   = false
 
   # Ensure hub peering is created first
   depends_on = [

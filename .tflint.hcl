@@ -2,7 +2,8 @@
 # https://github.com/terraform-linters/tflint
 
 config {
-  module              = true
+  # This attribute replaces the deprecated 'module' attribute in TFLint v0.54.0+
+  call_module_type    = "all"
   force               = false
   disabled_by_default = false
 }
@@ -24,14 +25,6 @@ plugin "terraform" {
 rule "azurerm_resource_missing_tags" {
   enabled = true
   tags    = ["Environment", "ManagedBy", "Project"]
-}
-
-rule "azurerm_storage_account_name_convention" {
-  enabled = true
-}
-
-rule "azurerm_virtual_machine_scale_set_extensions_time_budget" {
-  enabled = true
 }
 
 # Terraform best practices

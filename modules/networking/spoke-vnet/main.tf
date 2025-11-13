@@ -39,7 +39,7 @@ locals {
   legacy_subnets = {
     # Maintain legacy identifiers so existing outputs remain meaningful
     aks_nodes = {
-      name                                 = var.aks_node_pool_subnet_name
+      name                                  = var.aks_node_pool_subnet_name
       address_prefixes                      = [var.aks_node_pool_subnet_cidr]
       service_endpoints                     = []
       private_endpoint_network_policies     = null
@@ -47,7 +47,7 @@ locals {
       delegations                           = []
     }
     private_endpoints = {
-      name                                 = var.private_endpoints_subnet_name
+      name                                  = var.private_endpoints_subnet_name
       address_prefixes                      = [var.private_endpoints_subnet_cidr]
       service_endpoints                     = []
       private_endpoint_network_policies     = "Disabled"
@@ -55,8 +55,8 @@ locals {
       delegations                           = []
     }
     jumpbox = {
-      name                                 = var.jumpbox_subnet_name
-      address_prefixes                      = [var.jumpbox_subnet_cidr]
+      name                                  = "JumpboxSubnet"
+      address_prefixes                      = ["10.1.17.0/27"]
       service_endpoints                     = []
       private_endpoint_network_policies     = null
       private_link_service_network_policies = null
@@ -65,7 +65,7 @@ locals {
   }
 
   legacy_subnets_map = merge({}, local.legacy_subnets)
-  subnets_source = merge(local.legacy_subnets_map, var.subnets != null ? var.subnets : {})
+  subnets_source     = merge(local.legacy_subnets_map, var.subnets != null ? var.subnets : {})
 
   # Normalize to ensure each value has a 'name'
   normalized_subnets = {

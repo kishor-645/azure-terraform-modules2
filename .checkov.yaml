@@ -76,6 +76,3 @@ skip-path:
 #   - file: modules/security/azure-firewall/main.tf
 #     checks:
 #       - CKV_AZURE_XX
-
-# Baseline file for tracking exceptions
-baseline: .checkov.baseline

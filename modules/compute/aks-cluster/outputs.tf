@@ -134,18 +134,18 @@ output "user_node_pool_id" {
 output "cluster_details" {
   description = "Consolidated AKS cluster details"
   value = {
-    id                   = azurerm_kubernetes_cluster.this.id
-    name                 = azurerm_kubernetes_cluster.this.name
-    fqdn                 = azurerm_kubernetes_cluster.this.fqdn
-    private_fqdn         = azurerm_kubernetes_cluster.this.private_fqdn
-    kubernetes_version   = azurerm_kubernetes_cluster.this.kubernetes_version
-    node_resource_group  = azurerm_kubernetes_cluster.this.node_resource_group
-    network_plugin       = azurerm_kubernetes_cluster.this.network_profile[0].network_plugin
-    network_plugin_mode  = azurerm_kubernetes_cluster.this.network_profile[0].network_plugin_mode
-    network_policy       = azurerm_kubernetes_cluster.this.network_profile[0].network_policy
-    outbound_type        = azurerm_kubernetes_cluster.this.network_profile[0].outbound_type
-    istio_enabled        = length(azurerm_kubernetes_cluster.this.service_mesh_profile) > 0
-    private_cluster      = var.private_cluster_enabled
+    id                  = azurerm_kubernetes_cluster.this.id
+    name                = azurerm_kubernetes_cluster.this.name
+    fqdn                = azurerm_kubernetes_cluster.this.fqdn
+    private_fqdn        = azurerm_kubernetes_cluster.this.private_fqdn
+    kubernetes_version  = azurerm_kubernetes_cluster.this.kubernetes_version
+    node_resource_group = azurerm_kubernetes_cluster.this.node_resource_group
+    network_plugin      = azurerm_kubernetes_cluster.this.network_profile[0].network_plugin
+    network_plugin_mode = azurerm_kubernetes_cluster.this.network_profile[0].network_plugin_mode
+    network_policy      = azurerm_kubernetes_cluster.this.network_profile[0].network_policy
+    outbound_type       = azurerm_kubernetes_cluster.this.network_profile[0].outbound_type
+    istio_enabled       = length(azurerm_kubernetes_cluster.this.service_mesh_profile) > 0
+    private_cluster     = var.private_cluster_enabled
   }
 }
 
@@ -155,7 +155,7 @@ output "cluster_details" {
 
 output "connection_instructions" {
   description = "Instructions for connecting to the AKS cluster"
-  value = <<-EOT
+  value       = <<-EOT
     ===================================
     AKS Cluster Connection Instructions
     ===================================

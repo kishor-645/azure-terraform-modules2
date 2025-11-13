@@ -68,7 +68,7 @@ output "registry_details" {
 
 output "connection_instructions" {
   description = "Instructions for using the registry"
-  value = <<-EOT
+  value       = <<-EOT
     ===================================
     ACR Connection Instructions
     ===================================

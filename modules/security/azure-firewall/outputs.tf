@@ -122,13 +122,13 @@ output "firewall_details" {
   description = "Consolidated details of the Azure Firewall deployment"
   value = {
     firewall = {
-      id                = azurerm_firewall.this.id
-      name              = azurerm_firewall.this.name
-      private_ip        = azurerm_firewall.this.ip_configuration[0].private_ip_address
-      public_ip         = azurerm_public_ip.firewall.ip_address
-      management_ip     = azurerm_public_ip.firewall_management.ip_address
-      sku_tier          = azurerm_firewall.this.sku_tier
-      zones             = azurerm_firewall.this.zones
+      id            = azurerm_firewall.this.id
+      name          = azurerm_firewall.this.name
+      private_ip    = azurerm_firewall.this.ip_configuration[0].private_ip_address
+      public_ip     = azurerm_public_ip.firewall.ip_address
+      management_ip = azurerm_public_ip.firewall_management.ip_address
+      sku_tier      = azurerm_firewall.this.sku_tier
+      zones         = azurerm_firewall.this.zones
     }
     policy = {
       id                       = azurerm_firewall_policy.this.id
@@ -151,5 +151,5 @@ output "firewall_details" {
 
 output "deployment_status" {
   description = "Status message for firewall deployment"
-  value = var.internal_lb_ip == "" ? "⚠️  DNAT rules created but internal_lb_ip is empty - update after AKS deployment" : "✅ Firewall deployed successfully with DNAT rules configured"
+  value       = var.internal_lb_ip == "" ? "⚠️  DNAT rules created but internal_lb_ip is empty - update after AKS deployment" : "✅ Firewall deployed successfully with DNAT rules configured"
 }

@@ -59,13 +59,13 @@ output "private_ip" {
 output "file_share_details" {
   description = "Consolidated file share details"
   value = {
-    storage_account_name   = azurerm_storage_account.this.name
-    file_share_name        = azurerm_storage_share.this.name
-    file_share_url         = azurerm_storage_share.this.url
-    quota_gb               = var.file_share_quota_gb
-    protocol               = var.enabled_protocol
-    access_tier            = var.access_tier
-    has_private_endpoint   = var.enable_private_endpoint
+    storage_account_name = azurerm_storage_account.this.name
+    file_share_name      = azurerm_storage_share.this.name
+    file_share_url       = azurerm_storage_share.this.url
+    quota_gb             = var.file_share_quota_gb
+    protocol             = var.enabled_protocol
+    access_tier          = var.access_tier
+    has_private_endpoint = var.enable_private_endpoint
   }
 }
 
@@ -75,7 +75,7 @@ output "file_share_details" {
 
 output "mount_instructions" {
   description = "Mount instructions for the file share"
-  value = var.enabled_protocol == "NFS" ? <<-EOT
+  value = var.enabled_protocol == "NFS" ? (<<-EOT
     ===================================
     NFS 4.1 Mount Instructions
     ===================================
@@ -95,5 +95,6 @@ output "mount_instructions" {
        ${azurerm_storage_account.this.name}.file.core.windows.net:/${azurerm_storage_account.this.name}/${var.file_share_name} /mnt/${var.file_share_name} nfs4 sec=sys,vers=4.1,nolock 0 0
     
     ===================================
-  EOT : "SMB protocol selected. Use Azure Portal for mount instructions."
+  EOT
+  ) : "SMB protocol selected. Use Azure Portal for mount instructions."
 }

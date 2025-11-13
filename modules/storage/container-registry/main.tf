@@ -3,7 +3,7 @@
 
 terraform {
   required_version = ">= 1.10.3"
-  
+
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
@@ -22,10 +22,10 @@ resource "azurerm_container_registry" "this" {
   location            = var.location
   sku                 = var.sku
   admin_enabled       = var.admin_enabled
-  
+
   # Public network access
   public_network_access_enabled = var.public_network_access_enabled
-  
+
   # Network Rule Set (Premium only)
   # Note: Network rules are configured via private endpoints for security
   # Public network access is disabled by default
